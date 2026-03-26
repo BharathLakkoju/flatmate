@@ -22,6 +22,7 @@ import { useTaskStore } from "@/stores/use-task-store";
 import { useModalStore } from "@/stores/use-modal-store";
 import { useAppStore } from "@/stores/use-app-store";
 import { useFlatStore } from "@/stores/use-flat-store";
+import type { TaskStatus } from "@/types";
 import { TasksPageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
@@ -72,14 +73,31 @@ export default function TasksPage() {
 
   if (!isAppReady) return <TasksPageSkeleton />;
 
-  const toggleTaskComplete = (taskId: string) => {
+  const toggleTaskComplete = async (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
-    updateTask(taskId, {
-      status: task.status === "completed" ? "pending" : "completed",
+    const updates = {
+      status: (task.status === "completed"
+        ? "pending"
+        : "completed") as TaskStatus,
       completed_at:
         task.status === "completed" ? null : new Date().toISOString(),
+    };
+    // Optimistic update
+    updateTask(taskId, updates);
+    // Persist to server
+    const res = await fetch(`/api/tasks/${taskId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
     });
+    if (!res.ok) {
+      // Revert on failure
+      updateTask(taskId, {
+        status: task.status,
+        completed_at: task.completed_at,
+      });
+    }
   };
 
   return (
