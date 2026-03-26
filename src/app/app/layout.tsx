@@ -19,25 +19,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const flatId = localStorage.getItem("flatmate_flat_id");
-    if (flatId || flat) {
+    // If Zustand already has the flat loaded (e.g. client-side navigation), skip
+    if (flat) {
       setChecked(true);
       return;
     }
 
-    // No flat in localStorage — check if user already has a membership (e.g. new device login)
+    // Always verify membership via /api/me — handles stale localStorage & new users
     fetch("/api/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.flat?.id) {
-          // Restore the flat_id so AppDataProvider can load it
           localStorage.setItem("flatmate_flat_id", data.flat.id);
           setChecked(true);
         } else {
+          localStorage.removeItem("flatmate_flat_id");
           router.replace("/onboarding");
         }
       })
-      .catch(() => router.replace("/onboarding"));
+      .catch(() => {
+        localStorage.removeItem("flatmate_flat_id");
+        router.replace("/onboarding");
+      });
   }, [flat, router]);
 
   if (!checked) {
