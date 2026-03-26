@@ -61,6 +61,15 @@ const priorities = [
   { value: "urgent", label: "Urgent" },
 ];
 
+function autoResize(el: HTMLTextAreaElement) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 200) + "px";
+}
+
+function scrollIntoViewAfterKeyboard(el: HTMLElement) {
+  setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 320);
+}
+
 export function NewEntryModal() {
   const { isNewEntryOpen, defaultTab, defaultDate, defaultMealType, editingEntry, closeNewEntry } =
     useModalStore();
@@ -273,7 +282,7 @@ export function NewEntryModal() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-sm font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                 activeTab === tab.id
                   ? "bg-primary-fixed text-primary"
                   : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -321,7 +330,7 @@ export function NewEntryModal() {
                       key={c.value}
                       type="button"
                       onClick={() => setCategory(c.value)}
-                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                         category === c.value
                           ? "bg-primary text-primary-foreground"
                           : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -343,7 +352,7 @@ export function NewEntryModal() {
                       key={m.id}
                       type="button"
                       onClick={() => setPaidBy(m.id)}
-                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                         paidBy === m.id
                           ? "bg-primary text-primary-foreground"
                           : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -374,8 +383,10 @@ export function NewEntryModal() {
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  onInput={(e) => autoResize(e.currentTarget)}
+                  onFocus={(e) => scrollIntoViewAfterKeyboard(e.currentTarget)}
                   placeholder="What was this for? (Optional)"
-                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none"
+                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none overflow-hidden"
                 />
               </div>
 
@@ -409,7 +420,7 @@ export function NewEntryModal() {
                       key={m.value}
                       type="button"
                       onClick={() => setMealType(m.value)}
-                      className={`flex-1 h-9 rounded-[10px] text-xs font-medium transition-colors ${
+                      className={`flex-1 h-9 rounded-[10px] text-xs font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                         mealType === m.value
                           ? "bg-primary text-primary-foreground"
                           : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -440,8 +451,10 @@ export function NewEntryModal() {
                 <Textarea
                   value={mealContent}
                   onChange={(e) => setMealContent(e.target.value)}
+                  onInput={(e) => autoResize(e.currentTarget)}
+                  onFocus={(e) => scrollIntoViewAfterKeyboard(e.currentTarget)}
                   placeholder="e.g. Quinoa & Roasted Veggie Bowl"
-                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none"
+                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none overflow-hidden"
                 />
               </div>
             </motion.div>
@@ -478,7 +491,7 @@ export function NewEntryModal() {
                       key={p.value}
                       type="button"
                       onClick={() => setTaskPriority(p.value)}
-                      className={`flex-1 h-9 rounded-[10px] text-xs font-medium transition-colors ${
+                      className={`flex-1 h-9 rounded-[10px] text-xs font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                         taskPriority === p.value
                           ? "bg-primary text-primary-foreground"
                           : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -499,7 +512,7 @@ export function NewEntryModal() {
                   <button
                     type="button"
                     onClick={() => setAssignedTo("")}
-                    className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                    className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                       !assignedTo
                         ? "bg-primary text-primary-foreground"
                         : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -512,7 +525,7 @@ export function NewEntryModal() {
                       key={m.id}
                       type="button"
                       onClick={() => setAssignedTo(m.id)}
-                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-all duration-100 touch-manipulation active:scale-[0.97] ${
                         assignedTo === m.id
                           ? "bg-primary text-primary-foreground"
                           : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
@@ -543,8 +556,10 @@ export function NewEntryModal() {
                 <Textarea
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
+                  onInput={(e) => autoResize(e.currentTarget)}
+                  onFocus={(e) => scrollIntoViewAfterKeyboard(e.currentTarget)}
                   placeholder="Additional details (optional)"
-                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none"
+                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none overflow-hidden"
                 />
               </div>
             </motion.div>
@@ -589,8 +604,10 @@ export function NewEntryModal() {
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  onInput={(e) => autoResize(e.currentTarget)}
+                  onFocus={(e) => scrollIntoViewAfterKeyboard(e.currentTarget)}
                   placeholder="What's the plan? (Optional)"
-                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none"
+                  className="rounded-[12px] bg-surface-container-high min-h-20 resize-none overflow-hidden"
                 />
               </div>
             </motion.div>
@@ -652,7 +669,7 @@ export function NewEntryModal() {
   return (
     <Drawer open={isNewEntryOpen} onOpenChange={(open) => !open && closeNewEntry()}>
       <DrawerContent className="bg-surface-container-lowest">
-        <div className="overflow-y-auto max-h-[85vh]" data-vaul-no-drag>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain" data-vaul-no-drag>
           <DrawerHeader>
             <DrawerTitle className="font-heading text-xl font-bold text-on-surface">
               {isEditing ? "Edit Entry" : "New Entry"}
