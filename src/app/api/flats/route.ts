@@ -39,8 +39,13 @@ export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Cryptographically random 6-hex suffix — 16M combinations vs 9K before
   const prefix = parsed.data.name.replace(/[^a-zA-Z]/g, "").slice(0, 3).toUpperCase() || "FLT";
-  const inviteCode = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const randomSuffix = Array.from(
+    { length: 6 },
+    () => Math.floor(Math.random() * 16).toString(16)
+  ).join("").toUpperCase();
+  const inviteCode = `${prefix}-${randomSuffix}`;
 
   const [flat] = await db
     .insert(flats)

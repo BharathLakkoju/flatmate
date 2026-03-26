@@ -3,12 +3,16 @@ import { db } from "@/lib/db";
 import { expenseEntries } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { expenseSchema } from "@/lib/validators/expense";
+import { requireFlatMember } from "@/lib/api/auth-guard";
 
 export async function GET(req: NextRequest) {
   const flatId = req.nextUrl.searchParams.get("flat_id");
   if (!flatId) {
     return NextResponse.json({ error: "flat_id required" }, { status: 400 });
   }
+
+  const auth = await requireFlatMember(flatId);
+  if (!auth.ok) return auth.response;
 
   const rows = await db
     .select()
@@ -26,6 +30,9 @@ export async function POST(req: NextRequest) {
   if (!flat_id) {
     return NextResponse.json({ error: "flat_id required" }, { status: 400 });
   }
+
+  const auth = await requireFlatMember(flat_id);
+  if (!auth.ok) return auth.response;
 
   const parsed = expenseSchema.safeParse(rest);
 

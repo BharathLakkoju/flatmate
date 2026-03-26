@@ -6,5 +6,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*"],
+  matcher: [
+    /*
+     * Match all request paths for /app/* (authenticated shell).
+     * Skip static files, images, and Next.js internals.
+     */
+    "/app/:path*",
+  ],
 };
