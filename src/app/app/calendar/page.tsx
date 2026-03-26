@@ -72,8 +72,6 @@ export default function CalendarPage() {
 
   const [panelOpen, setPanelOpen] = useState(false);
 
-  if (!isAppReady) return <CalendarPageSkeleton />;
-
   // Build calendar grid
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -94,6 +92,8 @@ export default function CalendarPage() {
     setSelectedDate(format(day, "yyyy-MM-dd"));
     setPanelOpen(true);
   };
+
+  if (!isAppReady) return <CalendarPageSkeleton />;
 
   return (
     <div className="max-w-5xl mx-auto">

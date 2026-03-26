@@ -35,6 +35,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${manrope.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-surface">
         <TooltipProvider>{children}</TooltipProvider>

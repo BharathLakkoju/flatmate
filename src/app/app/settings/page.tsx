@@ -66,14 +66,14 @@ export default function SettingsPage() {
 
   const isAdmin = currentMember?.role === "admin";
 
-  if (!isAppReady) return <SettingsPageSkeleton />;
-
   // Sync budget value whenever the flat loads or its budget changes
   useEffect(() => {
     if (flat?.monthly_budget !== undefined) {
       setBudgetValue(String(flat.monthly_budget));
     }
   }, [flat?.monthly_budget]);
+
+  if (!isAppReady) return <SettingsPageSkeleton />;
 
   const handleRemoveMember = async () => {
     if (!memberToRemove) return;
