@@ -4,6 +4,7 @@ import { mealPlanEntries } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { mealSchema } from "@/lib/validators/meal";
 import { requireFlatMember } from "@/lib/api/auth-guard";
+import { notifyFlat } from "@/lib/api/notify";
 
 export async function GET(req: NextRequest) {
   const flatId = req.nextUrl.searchParams.get("flat_id");
@@ -44,5 +45,14 @@ export async function POST(req: NextRequest) {
   }
 
   const [row] = await db.insert(mealPlanEntries).values({ ...parsed.data, flat_id }).returning();
+
+  await notifyFlat({
+    flat_id,
+    actor_id: auth.memberId,
+    type: "meal",
+    title: `${auth.memberName} planned a meal`,
+    body: `${parsed.data.meal_type.charAt(0).toUpperCase() + parsed.data.meal_type.slice(1)}: ${parsed.data.content}`,
+  });
+
   return NextResponse.json(row, { status: 201 });
 }

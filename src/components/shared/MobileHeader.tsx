@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useFlatStore } from "@/stores/use-flat-store";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 export function MobileHeader() {
   const flat = useFlatStore((s) => s.flat);
@@ -17,9 +18,7 @@ export function MobileHeader() {
         </h1>
       </Link>
       <div className="flex items-center gap-2">
-        <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors">
-          <Bell className="h-4 w-4 text-on-surface-variant" />
-        </button>
+        <NotificationBell />
         <Link
           href="/app/profile"
           className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors"

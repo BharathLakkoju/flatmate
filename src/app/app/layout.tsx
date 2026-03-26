@@ -17,11 +17,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const flatId = localStorage.getItem("flatmate_flat_id");
-    if (!flatId && !flat) {
-      router.replace("/onboarding");
-    } else {
+    if (flatId || flat) {
       setChecked(true);
+      return;
     }
+
+    // No flat in localStorage — check if user already has a membership (e.g. new device login)
+    fetch("/api/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.flat?.id) {
+          // Restore the flat_id so AppDataProvider can load it
+          localStorage.setItem("flatmate_flat_id", data.flat.id);
+          setChecked(true);
+        } else {
+          router.replace("/onboarding");
+        }
+      })
+      .catch(() => router.replace("/onboarding"));
   }, [flat, router]);
 
   if (!checked) {

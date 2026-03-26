@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useFlatStore } from "@/stores/use-flat-store";
 import { useExpenseStore } from "@/stores/use-expense-store";
 import { useMealStore } from "@/stores/use-meal-store";
@@ -9,6 +10,7 @@ import { supabase } from "@/lib/supabase/client";
 import type { Member } from "@/types";
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const setFlat = useFlatStore((s) => s.setFlat);
   const setMembers = useFlatStore((s) => s.setMembers);
   const setCurrentMember = useFlatStore((s) => s.setCurrentMember);
@@ -41,6 +43,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setMembers(membersList);
       if (user) {
         const me = membersList.find((m: Member) => m.user_id === user.id);
+
+        // If the members list is loaded but this user is not in it, they were kicked
+        if (!me && membersList.length > 0) {
+          localStorage.removeItem("flatmate_flat_id");
+          router.replace("/onboarding");
+          return;
+        }
+
         if (me) {
           const realName = user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name;
           if (realName && me.display_name !== realName) {

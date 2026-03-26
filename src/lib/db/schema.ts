@@ -126,3 +126,18 @@ export const resources = pgTable("resources", {
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  flat_id: uuid("flat_id")
+    .references(() => flats.id, { onDelete: "cascade" })
+    .notNull(),
+  actor_id: uuid("actor_id")
+    .references(() => members.id, { onDelete: "cascade" })
+    .notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // "expense" | "meal" | "task" | "member_joined"
+  title: varchar("title", { length: 200 }).notNull(),
+  body: text("body"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+

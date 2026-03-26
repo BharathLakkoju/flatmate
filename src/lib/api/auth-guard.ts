@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
  * Returns { user, member } on success, or a NextResponse error to return early.
  */
 export async function requireFlatMember(flat_id: string): Promise<
-  | { ok: true; userId: string; memberId: string }
+  | { ok: true; userId: string; memberId: string; memberName: string }
   | { ok: false; response: NextResponse }
 > {
   const supabase = await createSupabaseServer();
@@ -40,5 +40,5 @@ export async function requireFlatMember(flat_id: string): Promise<
     };
   }
 
-  return { ok: true, userId: user.id, memberId: member.id };
+  return { ok: true, userId: user.id, memberId: member.id, memberName: member.display_name };
 }

@@ -98,16 +98,16 @@ export default function LandingPage() {
             Flatmate
           </span>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="cursor-pointer">
+            <Link href="/login">
               <Button
                 variant="ghost"
-                className="text-on-surface-variant hover:text-on-surface"
+                className="text-on-surface-variant hover:text-on-surface cursor-pointer px-4 h-10 text-sm"
               >
                 Log in
               </Button>
             </Link>
             <Link href="/signup" className="cursor-pointer">
-              <Button className="bg-linear-to-r from-primary to-primary-dim text-primary-foreground rounded-[12px]">
+              <Button className="bg-linear-to-r from-primary to-primary-dim text-primary-foreground rounded-lg cursor-pointer px-4 h-10 text-sm">
                 Get Started
               </Button>
             </Link>
@@ -168,7 +168,7 @@ export default function LandingPage() {
               <Link href="/signup">
                 <Button
                   size="lg"
-                  className="bg-linear-to-r from-primary to-primary-dim text-primary-foreground rounded-[12px] px-8 h-12 text-base"
+                  className="bg-linear-to-r from-primary to-primary-dim text-primary-foreground rounded-lg cursor-pointer px-8 h-12 text-base"
                 >
                   Create Your Flat
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -178,7 +178,7 @@ export default function LandingPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="rounded-[12px] px-8 h-12 text-base bg-surface-container-lowest text-on-surface"
+                  className="rounded-[12px] px-8 h-12 text-base bg-surface-container-lowest text-on-surface cursor-pointer"
                 >
                   I Have an Invite Code
                 </Button>

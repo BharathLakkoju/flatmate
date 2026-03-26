@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Home, Users, ArrowRight, Plus, Sparkles, Wallet } from "lucide-react";
@@ -28,6 +28,25 @@ export default function OnboardingPage() {
   const [flatId, setFlatId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // If the user already belongs to a flat (e.g. logging in on a new device),
+  // restore their flat_id and skip onboarding entirely.
+  useEffect(() => {
+    const existing = localStorage.getItem("flatmate_flat_id");
+    if (existing) {
+      router.replace("/app/home");
+      return;
+    }
+    fetch("/api/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.flat?.id) {
+          localStorage.setItem("flatmate_flat_id", data.flat.id);
+          router.replace("/app/home");
+        }
+      })
+      .catch(() => {});
+  }, [router]);
 
   const handleCreateFlat = async () => {
     if (!flatName.trim()) return;
@@ -88,9 +107,10 @@ export default function OnboardingPage() {
       const { flat } = await res.json();
       localStorage.setItem("flatmate_flat_id", flat.id);
       setResultFlatName(flat.name);
-      setResultCode(flat.invite_code);
+      // Do NOT set resultCode — joiners don't need to share the invite code
       setFlatId(flat.id);
-      setStep("budget");
+      // Skip budget step — only the flat creator (admin) sets the budget
+      setStep("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -380,12 +400,13 @@ export default function OnboardingPage() {
                   <Home className="h-8 w-8 text-primary" />
                 </div>
                 <h2 className="font-heading text-2xl font-bold text-on-surface">
-                  You&apos;re all set!
+                  {resultCode ? "You're all set!" : "Welcome to your flat!"}
                 </h2>
                 <p className="text-on-surface-variant">
                   <span className="font-semibold text-on-surface">{resultFlatName}</span> is ready to go.
                 </p>
 
+                {/* Only show invite code to the flat creator (admin) */}
                 {resultCode && (
                   <div className="mt-4 bg-surface-container-lowest rounded-[12px] p-4 inline-block shadow-[0_4px_16px_rgba(48,51,46,0.04)]">
                     <p className="text-xs text-on-surface-variant mb-1">

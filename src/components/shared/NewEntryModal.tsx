@@ -468,45 +468,60 @@ export function NewEntryModal() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
-                    Priority
-                  </Label>
-                  <Select value={taskPriority} onValueChange={(v) => v && setTaskPriority(v)}>
-                    <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {priorities.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>
-                          {p.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Priority — inline button group avoids portal issues inside Drawer on mobile */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
+                  Priority
+                </Label>
+                <div className="flex gap-2">
+                  {priorities.map((p) => (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => setTaskPriority(p.value)}
+                      className={`flex-1 h-9 rounded-[10px] text-xs font-medium transition-colors ${
+                        taskPriority === p.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
-                    Assign To
-                  </Label>
-                  <Select value={assignedTo || "unassigned"} onValueChange={(v) => setAssignedTo(v === "unassigned" ? "" : (v ?? ""))}>
-                    <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                      <SelectValue placeholder="Select">
-                        {assignedTo
-                          ? (members.find((m) => m.id === assignedTo)?.display_name ?? "Select")
-                          : "Unassigned"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {members.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.display_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              </div>
+
+              {/* Assign To — scrollable chip list avoids portal issues inside Drawer on mobile */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
+                  Assign To
+                </Label>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setAssignedTo("")}
+                    className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                      !assignedTo
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                    }`}
+                  >
+                    Unassigned
+                  </button>
+                  {members.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setAssignedTo(m.id)}
+                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                        assignedTo === m.id
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                      }`}
+                    >
+                      {m.display_name}
+                    </button>
+                  ))}
                 </div>
               </div>
 

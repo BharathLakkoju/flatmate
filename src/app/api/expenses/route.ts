@@ -4,6 +4,7 @@ import { expenseEntries } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { expenseSchema } from "@/lib/validators/expense";
 import { requireFlatMember } from "@/lib/api/auth-guard";
+import { notifyFlat } from "@/lib/api/notify";
 
 export async function GET(req: NextRequest) {
   const flatId = req.nextUrl.searchParams.get("flat_id");
@@ -48,5 +49,16 @@ export async function POST(req: NextRequest) {
     amount_inr: String(parsed.data.amount_inr),
     flat_id,
   }).returning();
+
+  await notifyFlat({
+    flat_id,
+    actor_id: auth.memberId,
+    type: "expense",
+    title: `${auth.memberName} added an expense`,
+    body: `₹${parsed.data.amount_inr} · ${parsed.data.category}${
+      parsed.data.note ? ` — ${parsed.data.note}` : ""
+    }`,
+  });
+
   return NextResponse.json(row, { status: 201 });
 }

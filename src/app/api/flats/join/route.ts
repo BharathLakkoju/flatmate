@@ -4,6 +4,7 @@ import { flats, members } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { joinFlatSchema } from "@/lib/validators/flat";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { notifyFlat } from "@/lib/api/notify";
 
 export async function POST(req: NextRequest) {
   // Derive user from session — never trust caller-supplied user_id
@@ -47,6 +48,15 @@ export async function POST(req: NextRequest) {
       role: "member",
     })
     .returning();
+
+  // Notify other flatmates that someone joined
+  await notifyFlat({
+    flat_id: flat.id,
+    actor_id: member.id,
+    type: "member_joined",
+    title: `${member.display_name} joined the flat`,
+    body: `Say hello to your new flatmate!`,
+  });
 
   return NextResponse.json({ flat, member }, { status: 201 });
 }

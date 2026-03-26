@@ -4,6 +4,7 @@ import { tasks } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { taskSchema } from "@/lib/validators/task";
 import { requireFlatMember } from "@/lib/api/auth-guard";
+import { notifyFlat } from "@/lib/api/notify";
 
 export async function GET(req: NextRequest) {
   const flatId = req.nextUrl.searchParams.get("flat_id");
@@ -44,5 +45,14 @@ export async function POST(req: NextRequest) {
   }
 
   const [row] = await db.insert(tasks).values({ ...parsed.data, flat_id }).returning();
+
+  await notifyFlat({
+    flat_id,
+    actor_id: auth.memberId,
+    type: "task",
+    title: `${auth.memberName} added a task`,
+    body: `"${parsed.data.title}" · ${parsed.data.priority} priority`,
+  });
+
   return NextResponse.json(row, { status: 201 });
 }

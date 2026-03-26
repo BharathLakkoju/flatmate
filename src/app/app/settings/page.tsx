@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Home,
@@ -57,6 +57,13 @@ export default function SettingsPage() {
   const [removeError, setRemoveError] = useState("");
 
   const isAdmin = currentMember?.role === "admin";
+
+  // Sync budget value whenever the flat loads or its budget changes
+  useEffect(() => {
+    if (flat?.monthly_budget !== undefined) {
+      setBudgetValue(String(flat.monthly_budget));
+    }
+  }, [flat?.monthly_budget]);
 
   const handleRemoveMember = async () => {
     if (!memberToRemove) return;
@@ -256,56 +263,72 @@ export default function SettingsPage() {
 
           <Separator className="bg-surface-container" />
 
-          {/* Monthly Budget */}
+          {/* Monthly Budget — admin can edit, members see read-only */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-3">
               <Shield className="h-4 w-4 text-on-surface-variant" />
               <Label className="text-sm text-on-surface">Monthly Budget</Label>
+              {!isAdmin && (
+                <span className="text-[10px] uppercase tracking-wider bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant">
+                  Admin only
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-2 ml-7">
-              <span className="text-on-surface-variant text-sm">₹</span>
-              <Input
-                type="number"
-                value={budgetValue}
-                onChange={(e) => {
-                  setBudgetValue(e.target.value);
-                  setBudgetSaved(false);
-                }}
-                className="rounded-[12px] bg-surface-container-high h-10 w-32"
-                min={0}
-              />
-              <Button
-                size="sm"
-                disabled={budgetSaving || !flat}
-                onClick={async () => {
-                  const budget = parseInt(budgetValue, 10);
-                  if (isNaN(budget) || budget < 0 || !flat) return;
-                  setBudgetSaving(true);
-                  try {
-                    const res = await fetch("/api/flats", {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ flat_id: flat.id, monthly_budget: budget }),
-                    });
-                    if (res.ok) {
-                      const updated = await res.json();
-                      setFlat(updated);
-                      setBudgetSaved(true);
-                      setTimeout(() => setBudgetSaved(false), 2000);
+            {isAdmin ? (
+              <div className="flex items-center gap-2 ml-7">
+                <span className="text-on-surface-variant text-sm">₹</span>
+                <Input
+                  type="number"
+                  value={budgetValue}
+                  onChange={(e) => {
+                    setBudgetValue(e.target.value);
+                    setBudgetSaved(false);
+                  }}
+                  className="rounded-[12px] bg-surface-container-high h-10 w-32"
+                  min={0}
+                />
+                <Button
+                  size="sm"
+                  disabled={budgetSaving || !flat}
+                  onClick={async () => {
+                    const budget = parseInt(budgetValue, 10);
+                    if (isNaN(budget) || budget < 0 || !flat) return;
+                    setBudgetSaving(true);
+                    try {
+                      const res = await fetch("/api/flats", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ flat_id: flat.id, monthly_budget: budget }),
+                      });
+                      if (res.ok) {
+                        const updated = await res.json();
+                        setFlat(updated);
+                        setBudgetSaved(true);
+                        setTimeout(() => setBudgetSaved(false), 2000);
+                      }
+                    } catch {
+                      // handle silently
+                    } finally {
+                      setBudgetSaving(false);
                     }
-                  } catch {
-                    // handle silently
-                  } finally {
-                    setBudgetSaving(false);
-                  }
-                }}
-                className="rounded-[10px] h-10 px-4 bg-primary text-primary-foreground text-xs"
-              >
-                {budgetSaving ? "Saving..." : budgetSaved ? "Saved ✓" : "Save"}
-              </Button>
-            </div>
+                  }}
+                  className="rounded-[10px] h-10 px-4 bg-primary text-primary-foreground text-xs"
+                >
+                  {budgetSaving ? "Saving..." : budgetSaved ? "Saved ✓" : "Save"}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 ml-7">
+                <span className="text-on-surface-variant text-sm">₹</span>
+                <div className="rounded-[12px] bg-surface-container-high h-10 w-32 px-3 flex items-center text-sm text-on-surface">
+                  {flat?.monthly_budget?.toLocaleString("en-IN") ?? "—"}
+                </div>
+              </div>
+            )}
             <p className="text-[10px] text-on-surface-variant ml-7">
-              Update this at the start of each month to match your household&apos;s spending plan.
+              {isAdmin
+                ? "Update this at the start of each month to match your household's spending plan."
+                : "Only the flat admin can change the monthly budget."}
             </p>
           </div>
         </div>
