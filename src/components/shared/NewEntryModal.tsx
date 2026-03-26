@@ -69,13 +69,23 @@ const priorities = [
 ];
 
 export function NewEntryModal() {
-  const { isNewEntryOpen, defaultTab, defaultDate, defaultMealType, closeNewEntry } =
+  const { isNewEntryOpen, defaultTab, defaultDate, defaultMealType, editingEntry, closeNewEntry } =
     useModalStore();
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
+  const flat = useFlatStore((s) => s.flat);
   const members = useFlatStore((s) => s.members);
+  const currentMember = useFlatStore((s) => s.currentMember);
   const addExpense = useExpenseStore((s) => s.addExpense);
+  const updateExpense = useExpenseStore((s) => s.updateExpense);
+  const removeExpense = useExpenseStore((s) => s.removeExpense);
   const addMeal = useMealStore((s) => s.addMeal);
+  const updateMeal = useMealStore((s) => s.updateMeal);
+  const removeMeal = useMealStore((s) => s.removeMeal);
   const addTask = useTaskStore((s) => s.addTask);
+  const updateTask = useTaskStore((s) => s.updateTask);
+  const removeTask = useTaskStore((s) => s.removeTask);
+
+  const isEditing = !!editingEntry;
 
   // Form states
   const [amount, setAmount] = useState("");
@@ -92,12 +102,32 @@ export function NewEntryModal() {
       setActiveTab(defaultTab);
       setDate(defaultDate);
       if (defaultMealType) setMealType(defaultMealType);
+
+      // Populate form fields when editing
+      if (editingEntry) {
+        if (editingEntry.type === "expense") {
+          setAmount(String(editingEntry.data.amount_inr));
+          setCategory(editingEntry.data.category);
+          setPaidBy(editingEntry.data.paid_by);
+          setDescription(editingEntry.data.note || "");
+        } else if (editingEntry.type === "meal") {
+          setMealType(editingEntry.data.meal_type);
+          setMealContent(editingEntry.data.content);
+        } else if (editingEntry.type === "task") {
+          setTaskTitle(editingEntry.data.title);
+          setTaskDescription(editingEntry.data.description || "");
+          setTaskPriority(editingEntry.data.priority);
+          setAssignedTo(editingEntry.data.assigned_to || "");
+        }
+      }
     }
-  }, [isNewEntryOpen, defaultTab, defaultDate, defaultMealType]);
+  }, [isNewEntryOpen, defaultTab, defaultDate, defaultMealType, editingEntry]);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [taskPriority, setTaskPriority] = useState("normal");
   const [assignedTo, setAssignedTo] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const resetForm = () => {
     setAmount("");
@@ -113,51 +143,127 @@ export function NewEntryModal() {
     setAssignedTo("");
   };
 
-  const handleSave = () => {
-    const id = crypto.randomUUID();
-    const now = new Date().toISOString();
+  const handleSave = async () => {
+    const flatId = flat?.id;
+    if (!flatId) return;
 
-    if (activeTab === "expense" && amount) {
-      addExpense({
-        id,
-        flat_id: "",
-        date,
-        category: category as "groceries" | "meals" | "utilities" | "outings" | "household" | "other",
-        amount_inr: parseFloat(amount),
-        paid_by: paidBy || "unknown",
-        note: description || null,
-        created_at: now,
-        updated_at: now,
-      });
-    } else if (activeTab === "meal" && mealContent) {
-      addMeal({
-        id,
-        flat_id: "",
-        date,
-        meal_type: mealType as "breakfast" | "lunch" | "dinner" | "general",
-        content: mealContent,
-        created_at: now,
-        updated_at: now,
-      });
-    } else if (activeTab === "task" && taskTitle) {
-      addTask({
-        id,
-        flat_id: "",
-        title: taskTitle,
-        description: taskDescription || null,
-        assigned_to: assignedTo || null,
-        status: "pending",
-        priority: taskPriority as "low" | "normal" | "high" | "urgent",
-        category: null,
-        due_date: date,
-        completed_at: null,
-        created_at: now,
-        updated_at: now,
-      });
+    setSaving(true);
+    try {
+      if (activeTab === "expense" && amount) {
+        const payload = {
+          date,
+          category,
+          amount_inr: parseFloat(amount),
+          paid_by: paidBy || currentMember?.id || undefined,
+          note: description || undefined,
+        };
+
+        if (isEditing && editingEntry?.type === "expense") {
+          const res = await fetch(`/api/expenses/${editingEntry.data.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            const updated = await res.json();
+            updateExpense(editingEntry.data.id, { ...updated, amount_inr: Number(updated.amount_inr) });
+          }
+        } else {
+          const res = await fetch("/api/expenses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ flat_id: flatId, ...payload }),
+          });
+          if (res.ok) {
+            const created = await res.json();
+            addExpense({ ...created, amount_inr: Number(created.amount_inr) });
+          }
+        }
+      } else if (activeTab === "meal" && mealContent) {
+        const payload = {
+          date,
+          meal_type: mealType,
+          content: mealContent,
+        };
+
+        if (isEditing && editingEntry?.type === "meal") {
+          const res = await fetch(`/api/meals/${editingEntry.data.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            const updated = await res.json();
+            updateMeal(editingEntry.data.id, updated);
+          }
+        } else {
+          const res = await fetch("/api/meals", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ flat_id: flatId, ...payload }),
+          });
+          if (res.ok) {
+            const created = await res.json();
+            addMeal(created);
+          }
+        }
+      } else if (activeTab === "task" && taskTitle) {
+        const payload = {
+          title: taskTitle,
+          description: taskDescription || undefined,
+          assigned_to: assignedTo || undefined,
+          priority: taskPriority,
+          due_date: date || undefined,
+          status: isEditing && editingEntry?.type === "task" ? editingEntry.data.status : "pending",
+        };
+
+        if (isEditing && editingEntry?.type === "task") {
+          const res = await fetch(`/api/tasks/${editingEntry.data.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            const updated = await res.json();
+            updateTask(editingEntry.data.id, updated);
+          }
+        } else {
+          const res = await fetch("/api/tasks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ flat_id: flatId, ...payload }),
+          });
+          if (res.ok) {
+            const created = await res.json();
+            addTask(created);
+          }
+        }
+      }
+
+      resetForm();
+      closeNewEntry();
+    } finally {
+      setSaving(false);
     }
+  };
 
-    resetForm();
-    closeNewEntry();
+  const handleDelete = async () => {
+    if (!isEditing || !editingEntry) return;
+    setDeleting(true);
+    try {
+      const typeMap = { expense: "expenses", meal: "meals", task: "tasks" } as const;
+      const endpoint = `/api/${typeMap[editingEntry.type]}/${editingEntry.data.id}`;
+      const res = await fetch(endpoint, { method: "DELETE" });
+      if (res.ok) {
+        if (editingEntry.type === "expense") removeExpense(editingEntry.data.id);
+        else if (editingEntry.type === "meal") removeMeal(editingEntry.data.id);
+        else if (editingEntry.type === "task") removeTask(editingEntry.data.id);
+        resetForm();
+        closeNewEntry();
+      }
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const isDesktop = useMediaQuery("(min-width: 640px)");
@@ -236,7 +342,9 @@ export function NewEntryModal() {
                   </Label>
                   <Select value={paidBy} onValueChange={(v) => v && setPaidBy(v)}>
                     <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder="Select">
+                        {paidBy ? members.find((m) => m.id === paidBy)?.display_name : null}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {members.map((m) => (
@@ -382,9 +490,13 @@ export function NewEntryModal() {
                   <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
                     Assign To
                   </Label>
-                  <Select value={assignedTo} onValueChange={(v) => v && setAssignedTo(v)}>
+                  <Select value={assignedTo || "unassigned"} onValueChange={(v) => setAssignedTo(v === "unassigned" ? "" : (v ?? ""))}>
                     <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder="Select">
+                        {assignedTo
+                          ? (members.find((m) => m.id === assignedTo)?.display_name ?? "Select")
+                          : "Unassigned"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unassigned">Unassigned</SelectItem>
@@ -473,21 +585,32 @@ export function NewEntryModal() {
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
+          {isEditing && (
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              disabled={deleting || saving}
+              className="rounded-[12px] h-11 px-4 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => {
               resetForm();
               closeNewEntry();
             }}
-            className="flex-1 rounded-[12px] h-11 bg-surface-container-high text-on-surface"
+            className={`rounded-[12px] h-11 bg-surface-container-high text-on-surface ${isEditing ? "" : "flex-1"}`}
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
+            disabled={saving || deleting}
             className="flex-1 rounded-[12px] h-11 bg-linear-to-r from-primary to-primary-dim text-primary-foreground"
           >
-            Save Entry
+            {saving ? "Saving…" : isEditing ? "Update" : "Save Entry"}
           </Button>
         </div>
       </div>
@@ -500,10 +623,10 @@ export function NewEntryModal() {
         <DialogContent className="bg-surface-container-lowest rounded-[16px] w-full max-w-lg mx-auto p-0 gap-0 border-0 max-h-[85vh] overflow-y-auto">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="font-heading text-xl font-bold text-on-surface">
-              New Entry
+              {isEditing ? "Edit Entry" : "New Entry"}
             </DialogTitle>
             <DialogDescription className="text-sm text-on-surface-variant">
-              Add a new record to the household log
+              {isEditing ? "Update the record details" : "Add a new record to the household log"}
             </DialogDescription>
           </DialogHeader>
           {formContent}
@@ -518,10 +641,10 @@ export function NewEntryModal() {
         <div className="overflow-y-auto max-h-[85vh]">
           <DrawerHeader>
             <DrawerTitle className="font-heading text-xl font-bold text-on-surface">
-              New Entry
+              {isEditing ? "Edit Entry" : "New Entry"}
             </DrawerTitle>
             <DrawerDescription className="text-sm text-on-surface-variant">
-              Add a new record to the household log
+              {isEditing ? "Update the record details" : "Add a new record to the household log"}
             </DrawerDescription>
           </DrawerHeader>
           {formContent}

@@ -37,11 +37,31 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         r.ok ? r.json() : []
       ),
       supabase.auth.getUser(),
-    ]).then(([membersList, { data: { user } }]: [Member[], { data: { user: { id: string } | null } }]) => {
+    ]).then(([membersList, { data: { user } }]: [Member[], { data: { user: { id: string; user_metadata?: Record<string, string> } | null } }]) => {
       setMembers(membersList);
       if (user) {
         const me = membersList.find((m: Member) => m.user_id === user.id);
-        if (me) setCurrentMember(me);
+        if (me) {
+          const realName = user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name;
+          if (realName && me.display_name !== realName) {
+            // Sync display_name from auth metadata
+            fetch(`/api/members/${me.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ display_name: realName }),
+            }).then((r) => {
+              if (r.ok) {
+                const updated = { ...me, display_name: realName };
+                setCurrentMember(updated);
+                setMembers(membersList.map((m) => (m.id === me.id ? updated : m)));
+              } else {
+                setCurrentMember(me);
+              }
+            });
+          } else {
+            setCurrentMember(me);
+          }
+        }
       }
     });
 

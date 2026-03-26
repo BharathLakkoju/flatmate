@@ -35,17 +35,16 @@ export function Sidebar() {
 
   return (
     <aside className="hidden lg:flex flex-col w-56 bg-surface h-screen sticky top-0 py-6 px-4">
-      {/* Logo */}
+      {/* Flat Name */}
       <div className="px-3 mb-2">
         <Link href="/app/home">
-          <h1 className="font-heading text-lg font-bold text-on-surface italic">
-            Harmony Habitat
+          <h1 className="font-heading text-lg font-bold text-on-surface">
+            {flat?.name || "My Flat"}
           </h1>
         </Link>
       </div>
       <div className="px-3 mb-6">
-        <p className="text-xs text-on-surface-variant">{flat?.name || "My Flat"}</p>
-        <p className="text-[10px] text-on-surface-variant/60">
+        <p className="text-xs text-on-surface-variant/90">
           {members.length > 0 ? `${members.length} Member${members.length !== 1 ? "s" : ""} Active` : "No members yet"}
         </p>
       </div>

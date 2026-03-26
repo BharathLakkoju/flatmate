@@ -48,6 +48,10 @@ export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
+  const [budgetValue, setBudgetValue] = useState(String(flat?.monthly_budget ?? 15000));
+  const [budgetSaving, setBudgetSaving] = useState(false);
+  const [budgetSaved, setBudgetSaved] = useState(false);
+  const setFlat = useFlatStore((s) => s.setFlat);
   const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState("");
@@ -256,16 +260,53 @@ export default function SettingsPage() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-3">
               <Shield className="h-4 w-4 text-on-surface-variant" />
-              <Label className="text-sm text-on-surface">Monthly Budget Cap</Label>
+              <Label className="text-sm text-on-surface">Monthly Budget</Label>
             </div>
             <div className="flex items-center gap-2 ml-7">
               <span className="text-on-surface-variant text-sm">₹</span>
               <Input
                 type="number"
-                defaultValue="15000"
+                value={budgetValue}
+                onChange={(e) => {
+                  setBudgetValue(e.target.value);
+                  setBudgetSaved(false);
+                }}
                 className="rounded-[12px] bg-surface-container-high h-10 w-32"
+                min={0}
               />
+              <Button
+                size="sm"
+                disabled={budgetSaving || !flat}
+                onClick={async () => {
+                  const budget = parseInt(budgetValue, 10);
+                  if (isNaN(budget) || budget < 0 || !flat) return;
+                  setBudgetSaving(true);
+                  try {
+                    const res = await fetch("/api/flats", {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ flat_id: flat.id, monthly_budget: budget }),
+                    });
+                    if (res.ok) {
+                      const updated = await res.json();
+                      setFlat(updated);
+                      setBudgetSaved(true);
+                      setTimeout(() => setBudgetSaved(false), 2000);
+                    }
+                  } catch {
+                    // handle silently
+                  } finally {
+                    setBudgetSaving(false);
+                  }
+                }}
+                className="rounded-[10px] h-10 px-4 bg-primary text-primary-foreground text-xs"
+              >
+                {budgetSaving ? "Saving..." : budgetSaved ? "Saved ✓" : "Save"}
+              </Button>
             </div>
+            <p className="text-[10px] text-on-surface-variant ml-7">
+              Update this at the start of each month to match your household&apos;s spending plan.
+            </p>
           </div>
         </div>
       </motion.div>

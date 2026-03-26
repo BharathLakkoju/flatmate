@@ -22,6 +22,7 @@ export interface Flat {
   id: string;
   invite_code: string;
   name: string;
+  monthly_budget: number;
   created_at: string;
 }
 

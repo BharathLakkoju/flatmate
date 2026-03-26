@@ -2,6 +2,7 @@ import { z } from "zod/v4";
 
 export const flatSchema = z.object({
   name: z.string().min(1, "Flat name is required").max(100),
+  monthly_budget: z.number().int().min(0).max(10000000).optional(),
 });
 
 export const joinFlatSchema = z.object({

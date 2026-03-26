@@ -34,8 +34,11 @@ const mealEmoji: Record<string, string> = {
 export default function MealsPage() {
   const { currentMonth, prevMonth, nextMonth, selectedDate, setSelectedDate } =
     useCalendarStore();
-  const getMealsByDate = useMealStore((s) => s.getMealsByDate);
+  const meals = useMealStore((s) => s.meals);
   const openNewEntry = useModalStore((s) => s.openNewEntry);
+  const openEditEntry = useModalStore((s) => s.openEditEntry);
+
+  const getMealsByDate = (date: string) => meals.filter((m) => m.date === date);
 
   // Current week starting from Sunday
   const selectedDt = new Date(selectedDate);
@@ -131,7 +134,7 @@ export default function MealsPage() {
                       return (
                         <div key={slot}>
                           {meal ? (
-                            <div className="bg-surface-container rounded-[10px] p-3 flex items-start gap-2.5">
+                            <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container rounded-[10px] p-3 flex items-start gap-2.5 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
                               <span className="text-lg mt-0.5">{mealEmoji[slot]}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">
@@ -196,7 +199,7 @@ export default function MealsPage() {
                     return (
                       <div key={slot}>
                         {meal ? (
-                          <div className="bg-surface-container-lowest rounded-[8px] p-2.5">
+                          <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container-lowest rounded-[8px] p-2.5 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
                             <p className="text-[9px] uppercase tracking-wider text-on-surface-variant">
                               {mealEmoji[slot]} {slot}
                             </p>
@@ -276,7 +279,7 @@ export default function MealsPage() {
                       return (
                         <div key={slot}>
                           {meal ? (
-                            <div className="bg-surface-container rounded-[12px] p-4 flex items-start gap-3">
+                            <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container rounded-[12px] p-4 flex items-start gap-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
                               <span className="text-xl mt-0.5">{mealEmoji[slot]}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
@@ -341,7 +344,7 @@ export default function MealsPage() {
                     return (
                       <div key={slot}>
                         {meal ? (
-                          <div className="bg-surface-container-lowest rounded-[8px] p-2">
+                          <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container-lowest rounded-[8px] p-2 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
                             <p className="text-[9px] uppercase tracking-wider text-on-surface-variant">
                               {mealEmoji[slot]} {slot}
                             </p>

@@ -14,6 +14,7 @@ import {
   Wifi,
   Droplets,
   Zap,
+  Pencil,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -58,13 +59,13 @@ const resourceStatusColor: Record<string, string> = {
 export default function TasksPage() {
   const tasks = useTaskStore((s) => s.tasks);
   const resources = useTaskStore((s) => s.resources);
-  const getTasksByStatus = useTaskStore((s) => s.getTasksByStatus);
   const updateTask = useTaskStore((s) => s.updateTask);
   const openNewEntry = useModalStore((s) => s.openNewEntry);
+  const openEditEntry = useModalStore((s) => s.openEditEntry);
 
-  const pendingTasks = getTasksByStatus("pending");
-  const inProgressTasks = getTasksByStatus("in_progress");
-  const completedTasks = getTasksByStatus("completed");
+  const pendingTasks = tasks.filter((t) => t.status === "pending");
+  const inProgressTasks = tasks.filter((t) => t.status === "in_progress");
+  const completedTasks = tasks.filter((t) => t.status === "completed");
 
   const toggleTaskComplete = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId);
@@ -185,6 +186,7 @@ export default function TasksPage() {
                     task={task}
                     index={i}
                     onToggle={toggleTaskComplete}
+                    onEdit={() => openEditEntry({ type: "task", data: task })}
                   />
                 ))
               ) : (
@@ -203,6 +205,7 @@ export default function TasksPage() {
                     task={task}
                     index={i}
                     onToggle={toggleTaskComplete}
+                    onEdit={() => openEditEntry({ type: "task", data: task })}
                   />
                 ))
               ) : (
@@ -221,6 +224,7 @@ export default function TasksPage() {
                     task={task}
                     index={i}
                     onToggle={toggleTaskComplete}
+                    onEdit={() => openEditEntry({ type: "task", data: task })}
                   />
                 ))
               ) : (
@@ -246,9 +250,10 @@ interface TaskCardProps {
   };
   index: number;
   onToggle: (id: string) => void;
+  onEdit: () => void;
 }
 
-function TaskCard({ task, index, onToggle }: TaskCardProps) {
+function TaskCard({ task, index, onToggle, onEdit }: TaskCardProps) {
   const isCompleted = task.status === "completed";
 
   return (
@@ -257,12 +262,13 @@ function TaskCard({ task, index, onToggle }: TaskCardProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ delay: index * 0.03 }}
-      className={`bg-surface-container-lowest rounded-[12px] p-4 flex items-start gap-3 ${
+      className={`bg-surface-container-lowest rounded-[12px] p-4 flex items-start gap-3 group cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all ${
         isCompleted ? "opacity-60" : ""
       }`}
+      onClick={onEdit}
     >
       <button
-        onClick={() => onToggle(task.id)}
+        onClick={(e) => { e.stopPropagation(); onToggle(task.id); }}
         className="mt-0.5 shrink-0"
       >
         {statusIcon[task.status] || <Circle className="h-4 w-4 text-on-surface-variant" />}

@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, TrendingUp, Users, Receipt } from "lucide-re
 import { useCalendarStore } from "@/stores/use-calendar-store";
 import { useExpenseStore } from "@/stores/use-expense-store";
 import { useFlatStore } from "@/stores/use-flat-store";
+import { useModalStore } from "@/stores/use-modal-store";
 import { HarmonyMeter } from "@/components/shared/HarmonyMeter";
 
 const stagger = {
@@ -41,6 +42,7 @@ export default function ExpensesPage() {
   const { currentMonth, prevMonth, nextMonth } = useCalendarStore();
   const expenses = useExpenseStore((s) => s.expenses);
   const members = useFlatStore((s) => s.members);
+  const openEditEntry = useModalStore((s) => s.openEditEntry);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -288,7 +290,8 @@ export default function ExpensesPage() {
               .map((expense) => (
                 <div
                   key={expense.id}
-                  className="flex items-center justify-between bg-surface-container rounded-[8px] p-3"
+                  onClick={() => openEditEntry({ type: "expense", data: expense })}
+                  className="flex items-center justify-between bg-surface-container rounded-[8px] p-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <div

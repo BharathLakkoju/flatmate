@@ -4,6 +4,47 @@ import { members } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const supabase = await createSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const [target] = await db
+    .select()
+    .from(members)
+    .where(eq(members.id, id))
+    .limit(1);
+
+  if (!target || target.user_id !== user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const displayName = typeof body.display_name === "string" ? body.display_name.trim() : null;
+
+  if (!displayName) {
+    return NextResponse.json({ error: "display_name required" }, { status: 400 });
+  }
+
+  const [updated] = await db
+    .update(members)
+    .set({ display_name: displayName })
+    .where(eq(members.id, id))
+    .returning();
+
+  return NextResponse.json(updated);
+}
+
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

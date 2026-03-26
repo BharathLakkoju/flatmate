@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Home, Users, ArrowRight, Plus, Sparkles } from "lucide-react";
+import { Home, Users, ArrowRight, Plus, Sparkles, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase/client";
 
-type Step = "welcome" | "choice" | "create" | "join" | "done";
+type Step = "welcome" | "choice" | "create" | "join" | "budget" | "done";
 
 const fadeSlide = {
   initial: { opacity: 0, x: 40 },
@@ -24,6 +24,8 @@ export default function OnboardingPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [resultCode, setResultCode] = useState("");
   const [resultFlatName, setResultFlatName] = useState("");
+  const [monthlyBudget, setMonthlyBudget] = useState("15000");
+  const [flatId, setFlatId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,11 +49,12 @@ export default function OnboardingPage() {
       const flat = await res.json();
       setResultCode(flat.invite_code);
       setResultFlatName(flat.name);
+      setFlatId(flat.id);
 
       // Store flat ID
       localStorage.setItem("flatmate_flat_id", flat.id);
 
-      setStep("done");
+      setStep("budget");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -72,7 +75,7 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           invite_code: inviteCode.trim().toUpperCase(),
-          display_name: user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Member",
+          display_name: user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Member",
           user_id: user?.id || null,
         }),
       });
@@ -86,7 +89,8 @@ export default function OnboardingPage() {
       localStorage.setItem("flatmate_flat_id", flat.id);
       setResultFlatName(flat.name);
       setResultCode(flat.invite_code);
-      setStep("done");
+      setFlatId(flat.id);
+      setStep("budget");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -277,6 +281,91 @@ export default function OnboardingPage() {
                     className="flex-1 bg-linear-to-r from-primary to-primary-dim text-primary-foreground rounded-[12px] h-11"
                   >
                     {loading ? "Joining..." : "Join Flat"}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step: Budget */}
+          {step === "budget" && (
+            <motion.div key="budget" {...fadeSlide} className="space-y-6">
+              <div className="text-center space-y-2">
+                <div className="mx-auto h-12 w-12 rounded-[12px] bg-primary-fixed flex items-center justify-center">
+                  <Wallet className="h-6 w-6 text-primary" />
+                </div>
+                <h2 className="font-heading text-2xl font-bold text-on-surface">
+                  Set monthly budget
+                </h2>
+                <p className="text-on-surface-variant text-sm">
+                  How much does your household spend per month? You can change this anytime.
+                </p>
+              </div>
+
+              <div className="bg-surface-container-lowest rounded-[16px] p-6 space-y-5 shadow-[0_12px_32px_rgba(48,51,46,0.06)]">
+                <div className="space-y-2">
+                  <Label htmlFor="monthlyBudget" className="text-on-surface text-sm font-medium">
+                    Monthly Budget (₹)
+                  </Label>
+                  <Input
+                    id="monthlyBudget"
+                    type="number"
+                    value={monthlyBudget}
+                    onChange={(e) => setMonthlyBudget(e.target.value)}
+                    placeholder="e.g. 15000"
+                    className="bg-surface-container-high rounded-[12px] h-11 focus:bg-surface-container-lowest transition-colors text-lg"
+                    min={0}
+                  />
+                  <p className="text-[10px] text-on-surface-variant">
+                    This helps track spending against your household budget
+                  </p>
+                </div>
+
+                {error && (
+                  <p className="text-sm text-destructive bg-tertiary-container/50 p-3 rounded-[8px]">
+                    {error}
+                  </p>
+                )}
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStep("done");
+                    }}
+                    className="flex-1 rounded-[12px] h-11"
+                  >
+                    Skip
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      const budget = parseInt(monthlyBudget, 10);
+                      if (isNaN(budget) || budget < 0) {
+                        setError("Please enter a valid budget amount");
+                        return;
+                      }
+                      setError("");
+                      setLoading(true);
+                      try {
+                        const res = await fetch("/api/flats", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ flat_id: flatId, monthly_budget: budget }),
+                        });
+                        if (!res.ok) {
+                          // Non-critical — proceed anyway
+                        }
+                      } catch {
+                        // Non-critical
+                      } finally {
+                        setLoading(false);
+                        setStep("done");
+                      }
+                    }}
+                    disabled={loading}
+                    className="flex-1 bg-linear-to-r from-primary to-primary-dim text-primary-foreground rounded-[12px] h-11"
+                  >
+                    {loading ? "Saving..." : "Set Budget"}
                   </Button>
                 </div>
               </div>

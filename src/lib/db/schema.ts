@@ -4,6 +4,7 @@ import {
   varchar,
   text,
   numeric,
+  integer,
   date,
   timestamp,
   pgEnum,
@@ -52,6 +53,7 @@ export const flats = pgTable("flats", {
   id: uuid("id").defaultRandom().primaryKey(),
   invite_code: varchar("invite_code", { length: 20 }).notNull().unique(),
   name: varchar("name", { length: 100 }).notNull(),
+  monthly_budget: integer("monthly_budget").default(15000).notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 

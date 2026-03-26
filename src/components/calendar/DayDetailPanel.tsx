@@ -3,11 +3,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { X, Receipt, UtensilsCrossed, Plus, CheckSquare } from "lucide-react";
+import { X, Receipt, UtensilsCrossed, Plus, CheckSquare, Pencil } from "lucide-react";
 import { useExpenseStore } from "@/stores/use-expense-store";
 import { useMealStore } from "@/stores/use-meal-store";
 import { useTaskStore } from "@/stores/use-task-store";
 import { useModalStore } from "@/stores/use-modal-store";
+
+const mealTypeOrder: Record<string, number> = { breakfast: 0, lunch: 1, dinner: 2, general: 3 };
 
 interface DayDetailPanelProps {
   open: boolean;
@@ -16,15 +18,17 @@ interface DayDetailPanelProps {
 }
 
 export function DayDetailPanel({ open, onClose, date }: DayDetailPanelProps) {
-  const getExpensesByDate = useExpenseStore((s) => s.getExpensesByDate);
-  const getTotalByDate = useExpenseStore((s) => s.getTotalByDate);
-  const getMealsByDate = useMealStore((s) => s.getMealsByDate);
+  const expenses = useExpenseStore((s) => s.expenses);
+  const meals = useMealStore((s) => s.meals);
   const tasks = useTaskStore((s) => s.tasks);
   const openNewEntry = useModalStore((s) => s.openNewEntry);
+  const openEditEntry = useModalStore((s) => s.openEditEntry);
 
-  const dayExpenses = getExpensesByDate(date);
-  const dayTotal = getTotalByDate(date);
-  const dayMeals = getMealsByDate(date);
+  const dayExpenses = expenses.filter((e) => e.date === date);
+  const dayTotal = dayExpenses.reduce((sum, e) => sum + Number(e.amount_inr), 0);
+  const dayMeals = meals
+    .filter((m) => m.date === date)
+    .sort((a, b) => (mealTypeOrder[a.meal_type] ?? 9) - (mealTypeOrder[b.meal_type] ?? 9));
   const dayTasks = tasks.filter((t) => t.due_date === date);
 
   const formattedDate = (() => {
@@ -95,12 +99,18 @@ export function DayDetailPanel({ open, onClose, date }: DayDetailPanelProps) {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="bg-surface-container-lowest rounded-[12px] p-3.5"
+                      className="bg-surface-container-lowest rounded-[12px] p-3.5 group/item cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                      onClick={() => openEditEntry({ type: "meal", data: meal })}
                     >
-                      <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium mb-1">
-                        {meal.meal_type}
-                      </p>
-                      <p className="text-sm text-on-surface">{meal.content}</p>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium mb-1">
+                            {meal.meal_type}
+                          </p>
+                          <p className="text-sm text-on-surface">{meal.content}</p>
+                        </div>
+                        <Pencil className="h-3.5 w-3.5 text-on-surface-variant opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0 mt-0.5" />
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -134,7 +144,8 @@ export function DayDetailPanel({ open, onClose, date }: DayDetailPanelProps) {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="bg-surface-container-lowest rounded-[12px] p-3.5 flex items-center justify-between"
+                      className="bg-surface-container-lowest rounded-[12px] p-3.5 flex items-center justify-between group/item cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                      onClick={() => openEditEntry({ type: "expense", data: expense })}
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-[8px] bg-secondary-container flex items-center justify-center">
@@ -149,9 +160,12 @@ export function DayDetailPanel({ open, onClose, date }: DayDetailPanelProps) {
                           )}
                         </div>
                       </div>
-                      <p className="text-sm font-bold text-on-surface">
-                        ₹{expense.amount_inr.toLocaleString("en-IN")}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-on-surface">
+                          ₹{Number(expense.amount_inr).toLocaleString("en-IN")}
+                        </p>
+                        <Pencil className="h-3.5 w-3.5 text-on-surface-variant opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0" />
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -185,7 +199,8 @@ export function DayDetailPanel({ open, onClose, date }: DayDetailPanelProps) {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="bg-surface-container-lowest rounded-[12px] p-3.5 flex items-center gap-3"
+                      className="bg-surface-container-lowest rounded-[12px] p-3.5 flex items-center gap-3 group/item cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                      onClick={() => openEditEntry({ type: "task", data: task })}
                     >
                       <div
                         className={`h-8 w-8 rounded-[8px] flex items-center justify-center shrink-0 ${
