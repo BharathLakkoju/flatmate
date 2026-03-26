@@ -8,7 +8,6 @@ import {
   UtensilsCrossed,
   Users,
   ArrowRight,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -187,14 +186,6 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Scroll indicator */}
-          <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <ChevronDown className="h-6 w-6 text-on-surface-variant/50" />
-          </motion.div>
         </div>
       </section>
 
