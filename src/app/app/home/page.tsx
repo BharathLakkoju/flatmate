@@ -205,7 +205,17 @@ export default function HomePage() {
             Due Today
           </p>
           <p className="text-base font-heading font-bold text-on-surface mt-0.5">
-            {dueTasks.length}
+            {dueTasks.some((t) => t.assigned_to === currentMember?.id) ? (
+              <>
+                <span className="text-error">@</span>{" "}
+                {
+                  dueTasks.filter((t) => t.assigned_to === currentMember?.id)
+                    .length
+                }
+              </>
+            ) : (
+              dueTasks.length
+            )}
           </p>
           <p className="text-[9px] text-on-surface-variant mt-4.5">
             {dueTasks.length === 0 ? "All clear" : "pending"}

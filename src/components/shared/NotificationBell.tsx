@@ -110,17 +110,6 @@ function SwipeableNotification({
             {timeAgo(notification.created_at)}
           </p>
         </div>
-        {/* Dismiss X button (non-swipe alternative) */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDismiss(notification.id);
-          }}
-          className="mt-1 shrink-0 h-5 w-5 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors opacity-0 group-hover:opacity-100"
-          style={{ opacity: 1 }}
-        >
-          <X className="h-3 w-3 text-on-surface-variant/50" />
-        </button>
       </motion.div>
     </motion.div>
   );

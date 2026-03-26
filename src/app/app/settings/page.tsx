@@ -120,7 +120,7 @@ export default function SettingsPage() {
       variants={stagger}
       initial="hidden"
       animate="show"
-      className="max-w-2xl mx-auto space-y-8"
+      className="max-w-2xl mx-auto space-y-8 mb-20"
     >
       {/* Header */}
       <motion.div variants={fadeUp}>

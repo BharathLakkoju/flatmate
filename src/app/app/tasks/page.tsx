@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTaskStore } from "@/stores/use-task-store";
 import { useModalStore } from "@/stores/use-modal-store";
 import { useAppStore } from "@/stores/use-app-store";
+import { useFlatStore } from "@/stores/use-flat-store";
 import { TasksPageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
@@ -64,6 +65,7 @@ export default function TasksPage() {
   const updateTask = useTaskStore((s) => s.updateTask);
   const openNewEntry = useModalStore((s) => s.openNewEntry);
   const openEditEntry = useModalStore((s) => s.openEditEntry);
+  const members = useFlatStore((s) => s.members);
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const completedTasks = tasks.filter((t) => t.status === "completed");
@@ -159,7 +161,7 @@ export default function TasksPage() {
           <TabsList className="bg-surface-container rounded-[12px] p-1 h-auto">
             <TabsTrigger
               value="pending"
-              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface px-3 py-1.5"
+              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface px-3 py-3"
             >
               Pending
               <Badge
@@ -171,7 +173,7 @@ export default function TasksPage() {
             </TabsTrigger>
             <TabsTrigger
               value="completed"
-              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface px-3 py-1.5"
+              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface px-3 py-3"
             >
               Done
               <Badge
@@ -194,6 +196,7 @@ export default function TasksPage() {
                     index={i}
                     onToggle={toggleTaskComplete}
                     onEdit={() => openEditEntry({ type: "task", data: task })}
+                    members={members}
                   />
                 ))
               ) : (
@@ -213,6 +216,7 @@ export default function TasksPage() {
                     index={i}
                     onToggle={toggleTaskComplete}
                     onEdit={() => openEditEntry({ type: "task", data: task })}
+                    members={members}
                   />
                 ))
               ) : (
@@ -231,6 +235,7 @@ interface TaskCardProps {
     id: string;
     title: string;
     description: string | null;
+    assigned_to: string | null;
     status: string;
     priority: string;
     due_date: string | null;
@@ -239,9 +244,10 @@ interface TaskCardProps {
   index: number;
   onToggle: (id: string) => void;
   onEdit: () => void;
+  members: { id: string; display_name: string }[];
 }
 
-function TaskCard({ task, index, onToggle, onEdit }: TaskCardProps) {
+function TaskCard({ task, index, onToggle, onEdit, members }: TaskCardProps) {
   const isCompleted = task.status === "completed";
 
   return (
@@ -305,6 +311,16 @@ function TaskCard({ task, index, onToggle, onEdit }: TaskCardProps) {
             Completed {format(new Date(task.completed_at), "MMM d")}
           </p>
         )}
+
+        {task.assigned_to &&
+          (() => {
+            const member = members.find((m) => m.id === task.assigned_to);
+            return member ? (
+              <p className="text-[10px] text-on-surface-variant mt-1 flex items-center gap-1">
+                <span className="text-primary">@</span> {member.display_name}
+              </p>
+            ) : null;
+          })()}
       </div>
     </motion.div>
   );

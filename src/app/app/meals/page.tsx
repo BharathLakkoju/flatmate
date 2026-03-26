@@ -254,7 +254,7 @@ export default function MealsPage() {
         </div>
 
         {/* Mobile: vertical list — today's card is prominent */}
-        <div className="lg:hidden space-y-3">
+        <div className="lg:hidden space-y-3 mb-20">
           {weekDays.map((day) => {
             const dateStr = format(day, "yyyy-MM-dd");
             const meals = getMealsByDate(dateStr);
