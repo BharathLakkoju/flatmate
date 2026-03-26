@@ -136,12 +136,12 @@ export default function HomePage() {
         <div className="flex-1 px-4">
           <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">Today</p>
           <p className="text-base font-heading font-bold text-on-surface mt-0.5">₹{todayTotal.toLocaleString("en-IN")}</p>
-          <p className="text-[9px] text-on-surface-variant mt-[18px]">{expenses.filter((e) => e.date === todayStr).length} entries</p>
+          <p className="text-[9px] text-on-surface-variant mt-4.5">{expenses.filter((e) => e.date === todayStr).length} entries</p>
         </div>
         <div className="flex-1 px-4">
           <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">Due Today</p>
           <p className="text-base font-heading font-bold text-on-surface mt-0.5">{dueTasks.length}</p>
-          <p className="text-[9px] text-on-surface-variant mt-[18px]">{dueTasks.length === 0 ? "All clear" : "pending"}</p>
+          <p className="text-[9px] text-on-surface-variant mt-4.5">{dueTasks.length === 0 ? "All clear" : "pending"}</p>
         </div>
       </motion.div>
 

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Home,
@@ -37,7 +38,8 @@ export function Sidebar() {
     <aside className="hidden lg:flex flex-col w-56 bg-surface h-screen sticky top-0 py-6 px-4">
       {/* Flat Name */}
       <div className="px-3 mb-2">
-        <Link href="/app/home">
+        <Link href="/app/home" className="flex items-center gap-2.5">
+          <Image src="/logo.ico" alt="Logo" width={28} height={28} className="rounded-[8px]" />
           <h1 className="font-heading text-lg font-bold text-on-surface">
             {flat?.name || "My Flat"}
           </h1>

@@ -206,7 +206,7 @@ export default function CalendarPage() {
                         {dayExpenses.slice(0, 2).map((expense) => (
                           <div
                             key={expense.id}
-                            className={`flex items-center gap-0.5 rounded-[4px] px-1 py-0.5 text-[10px] font-medium leading-tight truncate ${expenseCategoryColors[expense.category] || "text-slate-600 bg-slate-50"}`}
+                            className={`flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] font-medium leading-tight truncate ${expenseCategoryColors[expense.category] || "text-slate-600 bg-slate-50"}`}
                           >
                             <span className="shrink-0">₹{Number(expense.amount_inr) >= 1000 ? `${(Number(expense.amount_inr) / 1000).toFixed(1)}k` : Number(expense.amount_inr)}</span>
                             <span className="truncate capitalize">{expense.category}</span>
@@ -217,7 +217,7 @@ export default function CalendarPage() {
                         {dayMeals.slice(0, 2).map((meal) => (
                           <div
                             key={meal.id}
-                            className={`flex items-center gap-0.5 rounded-[4px] px-1 py-0.5 text-[10px] leading-tight truncate ${mealColors[meal.meal_type] || "text-slate-600 bg-slate-50"}`}
+                            className={`flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] leading-tight truncate ${mealColors[meal.meal_type] || "text-slate-600 bg-slate-50"}`}
                           >
                             <span className="opacity-60 shrink-0">●</span>
                             <span className="truncate capitalize">{meal.meal_type}: {meal.content}</span>
@@ -226,7 +226,7 @@ export default function CalendarPage() {
 
                         {/* Task indicator */}
                         {dayTasks.length > 0 && (dayExpenses.length + dayMeals.length) < 3 && (
-                          <div className="flex items-center gap-0.5 rounded-[4px] px-1 py-0.5 text-[10px] leading-tight text-tertiary bg-tertiary/10 truncate">
+                          <div className="flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] leading-tight text-tertiary bg-tertiary/10 truncate">
                             <span className="opacity-60 shrink-0">✓</span>
                             <span className="truncate">{dayTasks.length} task{dayTasks.length > 1 ? "s" : ""}</span>
                           </div>
@@ -241,7 +241,7 @@ export default function CalendarPage() {
                       </div>
 
                       {/* Mobile: colored dots */}
-                      <div className="sm:hidden mt-auto flex flex-wrap gap-[3px] pt-1">
+                      <div className="sm:hidden mt-auto flex flex-wrap gap-0.75 pt-1">
                         {dayExpenses.slice(0, 3).map((expense) => (
                           <span
                             key={expense.id}
