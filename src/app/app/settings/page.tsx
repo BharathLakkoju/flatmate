@@ -29,6 +29,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useFlatStore } from "@/stores/use-flat-store";
+import { useAppStore } from "@/stores/use-app-store";
+import { SettingsPageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
   hidden: {},
@@ -41,6 +43,7 @@ const fadeUp = {
 };
 
 export default function SettingsPage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const flat = useFlatStore((s) => s.flat);
   const members = useFlatStore((s) => s.members);
   const currentMember = useFlatStore((s) => s.currentMember);
@@ -48,15 +51,22 @@ export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
-  const [budgetValue, setBudgetValue] = useState(String(flat?.monthly_budget ?? 15000));
+  const [budgetValue, setBudgetValue] = useState(
+    String(flat?.monthly_budget ?? 15000),
+  );
   const [budgetSaving, setBudgetSaving] = useState(false);
   const [budgetSaved, setBudgetSaved] = useState(false);
   const setFlat = useFlatStore((s) => s.setFlat);
-  const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState("");
 
   const isAdmin = currentMember?.role === "admin";
+
+  if (!isAppReady) return <SettingsPageSkeleton />;
 
   // Sync budget value whenever the flat loads or its budget changes
   useEffect(() => {
@@ -71,7 +81,9 @@ export default function SettingsPage() {
     setRemoveError("");
 
     try {
-      const res = await fetch(`/api/members/${memberToRemove.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/members/${memberToRemove.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to remove member");
@@ -79,7 +91,9 @@ export default function SettingsPage() {
       removeMember(memberToRemove.id);
       setMemberToRemove(null);
     } catch (err) {
-      setRemoveError(err instanceof Error ? err.message : "Something went wrong");
+      setRemoveError(
+        err instanceof Error ? err.message : "Something went wrong",
+      );
     } finally {
       setRemoving(false);
     }
@@ -119,7 +133,10 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Household Profile */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-[12px] bg-primary-fixed flex items-center justify-center">
             <Home className="h-5 w-5 text-primary" />
@@ -157,7 +174,11 @@ export default function SettingsPage() {
                 onClick={handleCopyCode}
                 className="h-10 w-10 rounded-[12px] bg-primary-fixed flex items-center justify-center text-primary hover:opacity-80 transition-opacity"
               >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </button>
               <button className="h-10 w-10 rounded-[12px] bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
                 <RefreshCw className="h-4 w-4" />
@@ -171,15 +192,21 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Members */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-[12px] bg-secondary-container flex items-center justify-center">
             <Users className="h-5 w-5 text-on-secondary-container" />
           </div>
           <div>
-            <p className="font-heading font-semibold text-on-surface">Members</p>
+            <p className="font-heading font-semibold text-on-surface">
+              Members
+            </p>
             <p className="text-xs text-on-surface-variant">
-              {displayMembers.length} flatmate{displayMembers.length !== 1 ? "s" : ""}
+              {displayMembers.length} flatmate
+              {displayMembers.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -207,7 +234,12 @@ export default function SettingsPage() {
               </div>
               {isAdmin && member.id !== currentMember?.id && (
                 <button
-                  onClick={() => setMemberToRemove({ id: member.id, name: member.display_name })}
+                  onClick={() =>
+                    setMemberToRemove({
+                      id: member.id,
+                      name: member.display_name,
+                    })
+                  }
                   className="h-8 w-8 rounded-[8px] flex items-center justify-center text-on-surface-variant hover:text-destructive hover:bg-destructive/10 transition-colors"
                   title="Remove member"
                 >
@@ -220,8 +252,13 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Preferences */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
-        <p className="font-heading font-semibold text-on-surface">Preferences</p>
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
+        <p className="font-heading font-semibold text-on-surface">
+          Preferences
+        </p>
 
         <div className="space-y-4">
           {/* Dark Mode */}
@@ -298,7 +335,10 @@ export default function SettingsPage() {
                       const res = await fetch("/api/flats", {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ flat_id: flat.id, monthly_budget: budget }),
+                        body: JSON.stringify({
+                          flat_id: flat.id,
+                          monthly_budget: budget,
+                        }),
                       });
                       if (res.ok) {
                         const updated = await res.json();
@@ -314,7 +354,11 @@ export default function SettingsPage() {
                   }}
                   className="rounded-[10px] h-10 px-4 bg-primary text-primary-foreground text-xs"
                 >
-                  {budgetSaving ? "Saving..." : budgetSaved ? "Saved ✓" : "Save"}
+                  {budgetSaving
+                    ? "Saving..."
+                    : budgetSaved
+                      ? "Saved ✓"
+                      : "Save"}
                 </Button>
               </div>
             ) : (
@@ -335,14 +379,17 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Sign Out */}
-      <motion.div variants={fadeUp}>
+      {/* <motion.div variants={fadeUp}>
         <button className="w-full flex items-center justify-center gap-2 rounded-[12px] h-11 bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors text-sm font-medium">
           <LogOut className="h-4 w-4" /> Sign Out
         </button>
-      </motion.div>
+      </motion.div> */}
 
       {/* Remove Member Confirmation Dialog */}
-      <Dialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>
+      <Dialog
+        open={!!memberToRemove}
+        onOpenChange={(open) => !open && setMemberToRemove(null)}
+      >
         <DialogContent className="bg-surface-container-lowest rounded-[16px] max-w-sm p-6">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg font-bold text-on-surface">
@@ -350,7 +397,9 @@ export default function SettingsPage() {
             </DialogTitle>
             <DialogDescription className="text-sm text-on-surface-variant">
               Are you sure you want to remove{" "}
-              <span className="font-semibold text-on-surface">{memberToRemove?.name}</span>{" "}
+              <span className="font-semibold text-on-surface">
+                {memberToRemove?.name}
+              </span>{" "}
               from this flat? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>

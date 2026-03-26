@@ -2,17 +2,13 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import {
-  format,
-  startOfWeek,
-  addDays,
-  isSameDay,
-  isToday,
-} from "date-fns";
+import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
 import { ChevronLeft, ChevronRight, UtensilsCrossed, Plus } from "lucide-react";
 import { useCalendarStore } from "@/stores/use-calendar-store";
 import { useMealStore } from "@/stores/use-meal-store";
 import { useModalStore } from "@/stores/use-modal-store";
+import { useAppStore } from "@/stores/use-app-store";
+import { MealsPageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
   hidden: {},
@@ -32,6 +28,7 @@ const mealEmoji: Record<string, string> = {
 };
 
 export default function MealsPage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const { currentMonth, prevMonth, nextMonth, selectedDate, setSelectedDate } =
     useCalendarStore();
   const meals = useMealStore((s) => s.meals);
@@ -46,7 +43,7 @@ export default function MealsPage() {
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [weekStart.toISOString()]
+    [weekStart.toISOString()],
   );
 
   const goToPrevWeek = () => {
@@ -56,6 +53,8 @@ export default function MealsPage() {
     setSelectedDate(format(addDays(weekStart, 7), "yyyy-MM-dd"));
   };
 
+  if (!isAppReady) return <MealsPageSkeleton />;
+
   return (
     <motion.div
       variants={stagger}
@@ -64,13 +63,17 @@ export default function MealsPage() {
       className="max-w-5xl mx-auto space-y-6"
     >
       {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center justify-between">
+      <motion.div
+        variants={fadeUp}
+        className="flex items-center justify-between"
+      >
         <div>
           <h1 className="font-heading text-2xl font-bold text-on-surface">
             Meal Planner
           </h1>
           <p className="text-sm text-on-surface-variant mt-0.5">
-            {format(weekDays[0], "MMM d")} – {format(weekDays[6], "MMM d, yyyy")}
+            {format(weekDays[0], "MMM d")} –{" "}
+            {format(weekDays[6], "MMM d, yyyy")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -134,8 +137,15 @@ export default function MealsPage() {
                       return (
                         <div key={slot}>
                           {meal ? (
-                            <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container rounded-[10px] p-3 flex items-start gap-2.5 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
-                              <span className="text-lg mt-0.5">{mealEmoji[slot]}</span>
+                            <div
+                              onClick={() =>
+                                openEditEntry({ type: "meal", data: meal })
+                              }
+                              className="bg-surface-container rounded-[10px] p-3 flex items-start gap-2.5 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                            >
+                              <span className="text-lg mt-0.5">
+                                {mealEmoji[slot]}
+                              </span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">
                                   {slot}
@@ -147,10 +157,14 @@ export default function MealsPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => openNewEntry("meal", dateStr, slot)}
+                              onClick={() =>
+                                openNewEntry("meal", dateStr, slot)
+                              }
                               className="w-full bg-surface-container/50 rounded-[10px] p-3 flex items-center gap-2.5 hover:bg-surface-container transition-colors group"
                             >
-                              <span className="text-lg opacity-40 group-hover:opacity-70">{mealEmoji[slot]}</span>
+                              <span className="text-lg opacity-40 group-hover:opacity-70">
+                                {mealEmoji[slot]}
+                              </span>
                               <div className="text-left">
                                 <p className="text-[9px] uppercase tracking-wider text-on-surface-variant/50 group-hover:text-on-surface-variant font-medium">
                                   {slot}
@@ -199,7 +213,12 @@ export default function MealsPage() {
                     return (
                       <div key={slot}>
                         {meal ? (
-                          <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container-lowest rounded-[8px] p-2.5 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
+                          <div
+                            onClick={() =>
+                              openEditEntry({ type: "meal", data: meal })
+                            }
+                            className="bg-surface-container-lowest rounded-[8px] p-2.5 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                          >
                             <p className="text-[9px] uppercase tracking-wider text-on-surface-variant">
                               {mealEmoji[slot]} {slot}
                             </p>
@@ -279,8 +298,15 @@ export default function MealsPage() {
                       return (
                         <div key={slot}>
                           {meal ? (
-                            <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container rounded-[12px] p-4 flex items-start gap-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
-                              <span className="text-xl mt-0.5">{mealEmoji[slot]}</span>
+                            <div
+                              onClick={() =>
+                                openEditEntry({ type: "meal", data: meal })
+                              }
+                              className="bg-surface-container rounded-[12px] p-4 flex items-start gap-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                            >
+                              <span className="text-xl mt-0.5">
+                                {mealEmoji[slot]}
+                              </span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
                                   {slot}
@@ -292,10 +318,14 @@ export default function MealsPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => openNewEntry("meal", dateStr, slot)}
+                              onClick={() =>
+                                openNewEntry("meal", dateStr, slot)
+                              }
                               className="w-full bg-surface-container/50 rounded-[12px] p-4 flex items-center gap-3 hover:bg-surface-container transition-colors group"
                             >
-                              <span className="text-xl opacity-40 group-hover:opacity-70">{mealEmoji[slot]}</span>
+                              <span className="text-xl opacity-40 group-hover:opacity-70">
+                                {mealEmoji[slot]}
+                              </span>
                               <div className="text-left">
                                 <p className="text-[10px] uppercase tracking-wider text-on-surface-variant/50 group-hover:text-on-surface-variant font-medium">
                                   {slot}
@@ -344,7 +374,12 @@ export default function MealsPage() {
                     return (
                       <div key={slot}>
                         {meal ? (
-                          <div onClick={() => openEditEntry({ type: "meal", data: meal })} className="bg-surface-container-lowest rounded-[8px] p-2 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all">
+                          <div
+                            onClick={() =>
+                              openEditEntry({ type: "meal", data: meal })
+                            }
+                            className="bg-surface-container-lowest rounded-[8px] p-2 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
+                          >
                             <p className="text-[9px] uppercase tracking-wider text-on-surface-variant">
                               {mealEmoji[slot]} {slot}
                             </p>

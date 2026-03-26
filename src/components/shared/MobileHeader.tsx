@@ -14,7 +14,7 @@ export function MobileHeader() {
       <Link href="/app/home" className="flex items-center gap-2">
         <Image src="/logo.ico" alt="Logo" width={24} height={24} className="rounded-[6px]" />
         <h1 className="font-heading text-base font-bold text-on-surface">
-          {flat?.name || "My Flat"}
+          {flat?.name}
         </h1>
       </Link>
       <div className="flex items-center gap-2">

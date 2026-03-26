@@ -20,6 +20,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useTaskStore } from "@/stores/use-task-store";
 import { useModalStore } from "@/stores/use-modal-store";
+import { useAppStore } from "@/stores/use-app-store";
+import { TasksPageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
   hidden: {},
@@ -56,6 +58,7 @@ const resourceStatusColor: Record<string, string> = {
 };
 
 export default function TasksPage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const tasks = useTaskStore((s) => s.tasks);
   const resources = useTaskStore((s) => s.resources);
   const updateTask = useTaskStore((s) => s.updateTask);
@@ -64,6 +67,8 @@ export default function TasksPage() {
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const completedTasks = tasks.filter((t) => t.status === "completed");
+
+  if (!isAppReady) return <TasksPageSkeleton />;
 
   const toggleTaskComplete = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId);
@@ -83,7 +88,10 @@ export default function TasksPage() {
       className="max-w-4xl mx-auto space-y-6"
     >
       {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center justify-between">
+      <motion.div
+        variants={fadeUp}
+        className="flex items-center justify-between"
+      >
         <div>
           <h1 className="font-heading text-2xl font-bold text-on-surface">
             Tasks & Logistics
@@ -121,18 +129,22 @@ export default function TasksPage() {
                   </div>
                   <span
                     className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                      resourceStatusColor[resource.status] || "bg-surface-container"
+                      resourceStatusColor[resource.status] ||
+                      "bg-surface-container"
                     }`}
                   >
                     {resource.status.replace("_", " ")}
                   </span>
                 </div>
                 {resource.details && (
-                  <p className="text-xs text-on-surface-variant">{resource.details}</p>
+                  <p className="text-xs text-on-surface-variant">
+                    {resource.details}
+                  </p>
                 )}
                 {resource.next_action_date && (
                   <p className="text-[10px] text-on-surface-variant">
-                    Next: {format(new Date(resource.next_action_date), "MMM d, yyyy")}
+                    Next:{" "}
+                    {format(new Date(resource.next_action_date), "MMM d, yyyy")}
                   </p>
                 )}
               </div>
@@ -147,19 +159,25 @@ export default function TasksPage() {
           <TabsList className="bg-surface-container rounded-[12px] p-1 h-auto">
             <TabsTrigger
               value="pending"
-              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface"
+              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface px-3 py-1.5"
             >
               Pending
-              <Badge variant="secondary" className="ml-1.5 bg-primary-fixed text-primary text-[10px] h-5">
+              <Badge
+                variant="secondary"
+                className="ml-1.5 bg-primary-fixed text-primary text-[10px] h-5"
+              >
                 {pendingTasks.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger
               value="completed"
-              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface"
+              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface px-3 py-1.5"
             >
               Done
-              <Badge variant="secondary" className="ml-1.5 bg-surface-container-high text-on-surface-variant text-[10px] h-5">
+              <Badge
+                variant="secondary"
+                className="ml-1.5 bg-surface-container-high text-on-surface-variant text-[10px] h-5"
+              >
                 {completedTasks.length}
               </Badge>
             </TabsTrigger>
@@ -238,10 +256,15 @@ function TaskCard({ task, index, onToggle, onEdit }: TaskCardProps) {
       onClick={onEdit}
     >
       <button
-        onClick={(e) => { e.stopPropagation(); onToggle(task.id); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(task.id);
+        }}
         className="mt-0.5 shrink-0"
       >
-        {statusIcon[task.status] || <Circle className="h-4 w-4 text-on-surface-variant" />}
+        {statusIcon[task.status] || (
+          <Circle className="h-4 w-4 text-on-surface-variant" />
+        )}
       </button>
 
       <div className="flex-1 min-w-0">

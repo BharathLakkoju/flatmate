@@ -3,12 +3,20 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, TrendingUp, Users, Receipt } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  Users,
+  Receipt,
+} from "lucide-react";
 import { useCalendarStore } from "@/stores/use-calendar-store";
 import { useExpenseStore } from "@/stores/use-expense-store";
 import { useFlatStore } from "@/stores/use-flat-store";
 import { useModalStore } from "@/stores/use-modal-store";
 import { HarmonyMeter } from "@/components/shared/HarmonyMeter";
+import { useAppStore } from "@/stores/use-app-store";
+import { ExpensesPageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
   hidden: {},
@@ -39,6 +47,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function ExpensesPage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const { currentMonth, prevMonth, nextMonth } = useCalendarStore();
   const expenses = useExpenseStore((s) => s.expenses);
   const members = useFlatStore((s) => s.members);
@@ -95,6 +104,8 @@ export default function ExpensesPage() {
   const budgetCap = 15000;
   const budgetPercent = Math.min(100, (monthTotal / budgetCap) * 100);
 
+  if (!isAppReady) return <ExpensesPageSkeleton />;
+
   return (
     <motion.div
       variants={stagger}
@@ -103,7 +114,10 @@ export default function ExpensesPage() {
       className="max-w-4xl mx-auto space-y-8"
     >
       {/* Header */}
-      <motion.div variants={fadeUp} className="flex items-center justify-between">
+      <motion.div
+        variants={fadeUp}
+        className="flex items-center justify-between"
+      >
         <div>
           <h1 className="font-heading text-2xl font-bold text-on-surface">
             Monthly Summary
@@ -132,7 +146,10 @@ export default function ExpensesPage() {
       </motion.div>
 
       {/* Top Summary Cards */}
-      <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <motion.div
+        variants={fadeUp}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+      >
         <div className="bg-surface-container-lowest rounded-[12px] p-5">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -144,7 +161,11 @@ export default function ExpensesPage() {
             ₹{monthTotal.toLocaleString("en-IN")}
           </p>
           <div className="mt-3">
-            <HarmonyMeter value={budgetPercent} label="" statusText={`${budgetPercent.toFixed(0)}% of budget`} />
+            <HarmonyMeter
+              value={budgetPercent}
+              label=""
+              statusText={`${budgetPercent.toFixed(0)}% of budget`}
+            />
           </div>
         </div>
 
@@ -182,7 +203,10 @@ export default function ExpensesPage() {
       </motion.div>
 
       {/* Category Breakdown */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <p className="font-heading font-semibold text-on-surface">
           Category Breakdown
         </p>
@@ -194,7 +218,8 @@ export default function ExpensesPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span
                     className={`inline-flex px-2.5 py-0.5 rounded-[8px] text-xs font-medium ${
-                      categoryColors[cat.category] || "bg-surface-container text-on-surface"
+                      categoryColors[cat.category] ||
+                      "bg-surface-container text-on-surface"
                     }`}
                   >
                     {cat.label}
@@ -227,7 +252,10 @@ export default function ExpensesPage() {
       </motion.div>
 
       {/* Per-Person Breakdown */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <p className="font-heading font-semibold text-on-surface">
           Per-Person Paid Out
         </p>
@@ -278,7 +306,10 @@ export default function ExpensesPage() {
       </motion.div>
 
       {/* All Entries Table */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <p className="font-heading font-semibold text-on-surface">
           All Entries
         </p>
@@ -286,17 +317,23 @@ export default function ExpensesPage() {
         {monthExpenses.length > 0 ? (
           <div className="space-y-1">
             {[...monthExpenses]
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime(),
+              )
               .map((expense) => (
                 <div
                   key={expense.id}
-                  onClick={() => openEditEntry({ type: "expense", data: expense })}
+                  onClick={() =>
+                    openEditEntry({ type: "expense", data: expense })
+                  }
                   className="flex items-center justify-between bg-surface-container rounded-[8px] p-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`h-8 w-8 rounded-[8px] flex items-center justify-center ${
-                        categoryColors[expense.category] || "bg-surface-container-high"
+                        categoryColors[expense.category] ||
+                        "bg-surface-container-high"
                       }`}
                     >
                       <Receipt className="h-3.5 w-3.5" />

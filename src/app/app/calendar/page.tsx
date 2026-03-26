@@ -18,11 +18,18 @@ import { useExpenseStore } from "@/stores/use-expense-store";
 import { useMealStore } from "@/stores/use-meal-store";
 import { useTaskStore } from "@/stores/use-task-store";
 import { DayDetailPanel } from "@/components/calendar/DayDetailPanel";
+import { useAppStore } from "@/stores/use-app-store";
+import { CalendarPageSkeleton } from "@/components/shared/Skeletons";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const weekDaysShort = ["S", "M", "T", "W", "T", "F", "S"];
 
-const mealTypeOrder: Record<string, number> = { breakfast: 0, lunch: 1, dinner: 2, general: 3 };
+const mealTypeOrder: Record<string, number> = {
+  breakfast: 0,
+  lunch: 1,
+  dinner: 2,
+  general: 3,
+};
 
 const mealColors: Record<string, string> = {
   breakfast: "text-amber-700 bg-amber-50",
@@ -56,6 +63,7 @@ const expenseDotColors: Record<string, string> = {
 };
 
 export default function CalendarPage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const { currentMonth, prevMonth, nextMonth } = useCalendarStore();
   const { selectedDate, setSelectedDate } = useCalendarStore();
   const expenses = useExpenseStore((s) => s.expenses);
@@ -63,6 +71,8 @@ export default function CalendarPage() {
   const tasks = useTaskStore((s) => s.tasks);
 
   const [panelOpen, setPanelOpen] = useState(false);
+
+  if (!isAppReady) return <CalendarPageSkeleton />;
 
   // Build calendar grid
   const calendarDays = useMemo(() => {
@@ -163,9 +173,16 @@ export default function CalendarPage() {
               const isSelected = selectedDate === dateStr && panelOpen;
               const isCurrentDay = isToday(day);
               const dayExpenses = expenses.filter((e) => e.date === dateStr);
-              const dayMeals = [...meals.filter((m) => m.date === dateStr)]
-                .sort((a, b) => (mealTypeOrder[a.meal_type] ?? 9) - (mealTypeOrder[b.meal_type] ?? 9));
-              const dayTasks = tasks.filter((t) => t.due_date === dateStr && t.status !== "completed");
+              const dayMeals = [
+                ...meals.filter((m) => m.date === dateStr),
+              ].sort(
+                (a, b) =>
+                  (mealTypeOrder[a.meal_type] ?? 9) -
+                  (mealTypeOrder[b.meal_type] ?? 9),
+              );
+              const dayTasks = tasks.filter(
+                (t) => t.due_date === dateStr && t.status !== "completed",
+              );
 
               return (
                 <motion.button
@@ -208,8 +225,15 @@ export default function CalendarPage() {
                             key={expense.id}
                             className={`flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] font-medium leading-tight truncate ${expenseCategoryColors[expense.category] || "text-slate-600 bg-slate-50"}`}
                           >
-                            <span className="shrink-0">₹{Number(expense.amount_inr) >= 1000 ? `${(Number(expense.amount_inr) / 1000).toFixed(1)}k` : Number(expense.amount_inr)}</span>
-                            <span className="truncate capitalize">{expense.category}</span>
+                            <span className="shrink-0">
+                              ₹
+                              {Number(expense.amount_inr) >= 1000
+                                ? `${(Number(expense.amount_inr) / 1000).toFixed(1)}k`
+                                : Number(expense.amount_inr)}
+                            </span>
+                            <span className="truncate capitalize">
+                              {expense.category}
+                            </span>
                           </div>
                         ))}
 
@@ -220,22 +244,36 @@ export default function CalendarPage() {
                             className={`flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] leading-tight truncate ${mealColors[meal.meal_type] || "text-slate-600 bg-slate-50"}`}
                           >
                             <span className="opacity-60 shrink-0">●</span>
-                            <span className="truncate capitalize">{meal.meal_type}: {meal.content}</span>
+                            <span className="truncate capitalize">
+                              {meal.meal_type}: {meal.content}
+                            </span>
                           </div>
                         ))}
 
                         {/* Task indicator */}
-                        {dayTasks.length > 0 && (dayExpenses.length + dayMeals.length) < 3 && (
-                          <div className="flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] leading-tight text-tertiary bg-tertiary/10 truncate">
-                            <span className="opacity-60 shrink-0">✓</span>
-                            <span className="truncate">{dayTasks.length} task{dayTasks.length > 1 ? "s" : ""}</span>
-                          </div>
-                        )}
+                        {dayTasks.length > 0 &&
+                          dayExpenses.length + dayMeals.length < 3 && (
+                            <div className="flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-[10px] leading-tight text-tertiary bg-tertiary/10 truncate">
+                              <span className="opacity-60 shrink-0">✓</span>
+                              <span className="truncate">
+                                {dayTasks.length} task
+                                {dayTasks.length > 1 ? "s" : ""}
+                              </span>
+                            </div>
+                          )}
 
                         {/* Overflow indicator */}
-                        {(dayExpenses.length + dayMeals.length + (dayTasks.length > 0 ? 1 : 0)) > 4 && (
+                        {dayExpenses.length +
+                          dayMeals.length +
+                          (dayTasks.length > 0 ? 1 : 0) >
+                          4 && (
                           <p className="text-[9px] text-on-surface-variant/60 px-1">
-                            +{dayExpenses.length + dayMeals.length + dayTasks.length - 4} more
+                            +
+                            {dayExpenses.length +
+                              dayMeals.length +
+                              dayTasks.length -
+                              4}{" "}
+                            more
                           </p>
                         )}
                       </div>

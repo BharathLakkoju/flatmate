@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
+import { useAppStore } from "@/stores/use-app-store";
+import { ProfilePageSkeleton } from "@/components/shared/Skeletons";
 
 const stagger = {
   hidden: {},
@@ -23,6 +25,7 @@ const fadeUp = {
 };
 
 export default function ProfilePage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,6 +63,8 @@ export default function ProfilePage() {
   };
 
   const nameChanged = displayName !== originalName;
+
+  if (!isAppReady) return <ProfilePageSkeleton />;
 
   const handleLogout = async () => {
     setLoading(true);

@@ -26,7 +26,12 @@ import { useMealStore } from "@/stores/use-meal-store";
 import { useTaskStore } from "@/stores/use-task-store";
 import { useFlatStore } from "@/stores/use-flat-store";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Receipt, UtensilsCrossed, ClipboardList, CalendarIcon } from "lucide-react";
+import {
+  Receipt,
+  UtensilsCrossed,
+  ClipboardList,
+  CalendarIcon,
+} from "lucide-react";
 import { HarmonyMeter } from "@/components/shared/HarmonyMeter";
 
 type TabType = "expense" | "meal" | "task" | "event";
@@ -67,12 +72,21 @@ function autoResize(el: HTMLTextAreaElement) {
 }
 
 function scrollIntoViewAfterKeyboard(el: HTMLElement) {
-  setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 320);
+  setTimeout(
+    () => el.scrollIntoView({ behavior: "smooth", block: "center" }),
+    320,
+  );
 }
 
 export function NewEntryModal() {
-  const { isNewEntryOpen, defaultTab, defaultDate, defaultMealType, editingEntry, closeNewEntry } =
-    useModalStore();
+  const {
+    isNewEntryOpen,
+    defaultTab,
+    defaultDate,
+    defaultMealType,
+    editingEntry,
+    closeNewEntry,
+  } = useModalStore();
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
   const flat = useFlatStore((s) => s.flat);
   const members = useFlatStore((s) => s.members);
@@ -168,7 +182,10 @@ export function NewEntryModal() {
           });
           if (res.ok) {
             const updated = await res.json();
-            updateExpense(editingEntry.data.id, { ...updated, amount_inr: Number(updated.amount_inr) });
+            updateExpense(editingEntry.data.id, {
+              ...updated,
+              amount_inr: Number(updated.amount_inr),
+            });
           }
         } else {
           const res = await fetch("/api/expenses", {
@@ -216,7 +233,10 @@ export function NewEntryModal() {
           assigned_to: assignedTo || undefined,
           priority: taskPriority,
           due_date: date || undefined,
-          status: isEditing && editingEntry?.type === "task" ? editingEntry.data.status : "pending",
+          status:
+            isEditing && editingEntry?.type === "task"
+              ? editingEntry.data.status
+              : "pending",
         };
 
         if (isEditing && editingEntry?.type === "task") {
@@ -253,11 +273,16 @@ export function NewEntryModal() {
     if (!isEditing || !editingEntry) return;
     setDeleting(true);
     try {
-      const typeMap = { expense: "expenses", meal: "meals", task: "tasks" } as const;
+      const typeMap = {
+        expense: "expenses",
+        meal: "meals",
+        task: "tasks",
+      } as const;
       const endpoint = `/api/${typeMap[editingEntry.type]}/${editingEntry.data.id}`;
       const res = await fetch(endpoint, { method: "DELETE" });
       if (res.ok) {
-        if (editingEntry.type === "expense") removeExpense(editingEntry.data.id);
+        if (editingEntry.type === "expense")
+          removeExpense(editingEntry.data.id);
         else if (editingEntry.type === "meal") removeMeal(editingEntry.data.id);
         else if (editingEntry.type === "task") removeTask(editingEntry.data.id);
         resetForm();
@@ -307,7 +332,9 @@ export function NewEntryModal() {
               className="space-y-4"
             >
               <div className="bg-surface-container rounded-[12px] p-4">
-                <Label className="text-xs text-on-surface-variant">Amount</Label>
+                <Label className="text-xs text-on-surface-variant">
+                  Amount
+                </Label>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-on-surface-variant text-lg">₹</span>
                   <Input
@@ -650,14 +677,19 @@ export function NewEntryModal() {
 
   if (isDesktop) {
     return (
-      <Dialog open={isNewEntryOpen} onOpenChange={(open) => !open && closeNewEntry()}>
+      <Dialog
+        open={isNewEntryOpen}
+        onOpenChange={(open) => !open && closeNewEntry()}
+      >
         <DialogContent className="bg-surface-container-lowest rounded-[16px] w-full max-w-lg mx-auto p-0 gap-0 border-0 max-h-[85vh] overflow-y-auto">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="font-heading text-xl font-bold text-on-surface">
               {isEditing ? "Edit Entry" : "New Entry"}
             </DialogTitle>
             <DialogDescription className="text-sm text-on-surface-variant">
-              {isEditing ? "Update the record details" : "Add a new record to the household log"}
+              {isEditing
+                ? "Update the record details"
+                : "Add a new record to the household log"}
             </DialogDescription>
           </DialogHeader>
           {formContent}
@@ -667,15 +699,24 @@ export function NewEntryModal() {
   }
 
   return (
-    <Drawer open={isNewEntryOpen} onOpenChange={(open) => !open && closeNewEntry()}>
+    <Drawer
+      open={isNewEntryOpen}
+      onOpenChange={(open) => !open && closeNewEntry()}
+      repositionInputs={false}
+    >
       <DrawerContent className="bg-surface-container-lowest">
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain" data-vaul-no-drag>
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+          data-vaul-no-drag
+        >
           <DrawerHeader>
             <DrawerTitle className="font-heading text-xl font-bold text-on-surface">
               {isEditing ? "Edit Entry" : "New Entry"}
             </DrawerTitle>
             <DrawerDescription className="text-sm text-on-surface-variant">
-              {isEditing ? "Update the record details" : "Add a new record to the household log"}
+              {isEditing
+                ? "Update the record details"
+                : "Add a new record to the household log"}
             </DrawerDescription>
           </DrawerHeader>
           {formContent}

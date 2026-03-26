@@ -4,12 +4,16 @@ import { flats, members } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { flatSchema } from "@/lib/validators/flat";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { requireFlatMember } from "@/lib/api/auth-guard";
 
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
+
+  const auth = await requireFlatMember(id);
+  if (!auth.ok) return auth.response;
 
   const [flat] = await db
     .select()
@@ -25,6 +29,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Require authenticated user to create a flat
+  const supabase = await createSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
   const parsed = flatSchema.safeParse(body);
 
@@ -34,10 +45,6 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-
-  // Get authenticated user
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
 
   // Cryptographically random 6-hex suffix — 16M combinations vs 9K before
   const prefix = parsed.data.name.replace(/[^a-zA-Z]/g, "").slice(0, 3).toUpperCase() || "FLT";

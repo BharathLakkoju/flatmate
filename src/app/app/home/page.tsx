@@ -15,8 +15,15 @@ import { useMealStore } from "@/stores/use-meal-store";
 import { useTaskStore } from "@/stores/use-task-store";
 import { useModalStore } from "@/stores/use-modal-store";
 import { useFlatStore } from "@/stores/use-flat-store";
+import { useAppStore } from "@/stores/use-app-store";
+import { HomePageSkeleton } from "@/components/shared/Skeletons";
 
-const mealTypeOrder: Record<string, number> = { breakfast: 0, lunch: 1, dinner: 2, general: 3 };
+const mealTypeOrder: Record<string, number> = {
+  breakfast: 0,
+  lunch: 1,
+  dinner: 2,
+  general: 3,
+};
 
 const stagger = {
   hidden: {},
@@ -29,6 +36,7 @@ const fadeUp = {
 };
 
 export default function HomePage() {
+  const isAppReady = useAppStore((s) => s.isAppReady);
   const currentMember = useFlatStore((s) => s.currentMember);
   const flat = useFlatStore((s) => s.flat);
   const userName = currentMember?.display_name || "";
@@ -57,7 +65,10 @@ export default function HomePage() {
   const monthlyTotal = expenses
     .filter((e) => {
       const d = new Date(e.date);
-      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+      return (
+        d.getFullYear() === today.getFullYear() &&
+        d.getMonth() === today.getMonth()
+      );
     })
     .reduce((sum, e) => sum + Number(e.amount_inr), 0);
   const todayTotal = expenses
@@ -65,18 +76,26 @@ export default function HomePage() {
     .reduce((sum, e) => sum + Number(e.amount_inr), 0);
   const todayMeals = meals
     .filter((m) => m.date === todayStr)
-    .sort((a, b) => (mealTypeOrder[a.meal_type] ?? 9) - (mealTypeOrder[b.meal_type] ?? 9));
+    .sort(
+      (a, b) =>
+        (mealTypeOrder[a.meal_type] ?? 9) - (mealTypeOrder[b.meal_type] ?? 9),
+    );
   const dueTasks = tasks.filter(
-    (t) => t.due_date === todayStr && t.status !== "completed"
+    (t) => t.due_date === todayStr && t.status !== "completed",
   );
 
   // Recent expenses (last 5)
   const recentExpenses = [...expenses]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    )
     .slice(0, 5);
 
   const budgetCap = flat?.monthly_budget ?? 15000;
   const budgetPercent = Math.min(100, (monthlyTotal / budgetCap) * 100);
+
+  if (!isAppReady) return <HomePageSkeleton />;
 
   return (
     <motion.div
@@ -104,10 +123,31 @@ export default function HomePage() {
       <motion.div variants={fadeUp}>
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Expense", icon: Receipt, tab: "expense" as const, color: "bg-primary-fixed text-primary" },
-            { label: "Meal", icon: UtensilsCrossed, tab: "meal" as const, color: "bg-secondary-container text-on-secondary-container" },
-            { label: "Task", icon: ClipboardList, tab: "task" as const, color: "bg-tertiary-container text-on-tertiary-container" },
-            { label: "History", icon: TrendingDown, tab: undefined, color: "bg-surface-container-high text-on-surface", href: "/app/expenses" },
+            {
+              label: "Expense",
+              icon: Receipt,
+              tab: "expense" as const,
+              color: "bg-primary-fixed text-primary",
+            },
+            {
+              label: "Meal",
+              icon: UtensilsCrossed,
+              tab: "meal" as const,
+              color: "bg-secondary-container text-on-secondary-container",
+            },
+            {
+              label: "Task",
+              icon: ClipboardList,
+              tab: "task" as const,
+              color: "bg-tertiary-container text-on-tertiary-container",
+            },
+            {
+              label: "History",
+              icon: TrendingDown,
+              tab: undefined,
+              color: "bg-surface-container-high text-on-surface",
+              href: "/app/expenses",
+            },
           ].map((action) => (
             <button
               key={action.label}
@@ -128,42 +168,77 @@ export default function HomePage() {
       </motion.div>
 
       {/* Compact Stats Strip */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[16px] flex divide-x divide-surface-container-high py-3">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[16px] flex divide-x divide-surface-container-high py-3"
+      >
         <div className="flex-1 px-4">
-          <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">Budget</p>
-          <p className="text-base font-heading font-bold text-on-surface mt-0.5">₹{monthlyTotal.toLocaleString("en-IN")}</p>
+          <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">
+            Budget
+          </p>
+          <p className="text-base font-heading font-bold text-on-surface mt-0.5">
+            ₹{monthlyTotal.toLocaleString("en-IN")}
+          </p>
           <div className="h-1 bg-surface-container-high rounded-full overflow-hidden mt-2">
-            <div className="h-full bg-primary rounded-full" style={{ width: `${budgetPercent}%` }} />
+            <div
+              className="h-full bg-primary rounded-full"
+              style={{ width: `${budgetPercent}%` }}
+            />
           </div>
-          <p className="text-[9px] text-on-surface-variant mt-1">of ₹{budgetCap.toLocaleString("en-IN")}</p>
+          <p className="text-[9px] text-on-surface-variant mt-1">
+            of ₹{budgetCap.toLocaleString("en-IN")}
+          </p>
         </div>
         <div className="flex-1 px-4">
-          <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">Today</p>
-          <p className="text-base font-heading font-bold text-on-surface mt-0.5">₹{todayTotal.toLocaleString("en-IN")}</p>
-          <p className="text-[9px] text-on-surface-variant mt-4.5">{expenses.filter((e) => e.date === todayStr).length} entries</p>
+          <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">
+            Today
+          </p>
+          <p className="text-base font-heading font-bold text-on-surface mt-0.5">
+            ₹{todayTotal.toLocaleString("en-IN")}
+          </p>
+          <p className="text-[9px] text-on-surface-variant mt-4.5">
+            {expenses.filter((e) => e.date === todayStr).length} entries
+          </p>
         </div>
         <div className="flex-1 px-4">
-          <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">Due Today</p>
-          <p className="text-base font-heading font-bold text-on-surface mt-0.5">{dueTasks.length}</p>
-          <p className="text-[9px] text-on-surface-variant mt-4.5">{dueTasks.length === 0 ? "All clear" : "pending"}</p>
+          <p className="text-[9px] uppercase tracking-wider text-on-surface-variant font-medium">
+            Due Today
+          </p>
+          <p className="text-base font-heading font-bold text-on-surface mt-0.5">
+            {dueTasks.length}
+          </p>
+          <p className="text-[9px] text-on-surface-variant mt-4.5">
+            {dueTasks.length === 0 ? "All clear" : "pending"}
+          </p>
         </div>
       </motion.div>
 
       {/* Today's Meals */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UtensilsCrossed className="h-4 w-4 text-primary" />
-            <p className="font-heading font-semibold text-on-surface">Today&apos;s Meals</p>
+            <p className="font-heading font-semibold text-on-surface">
+              Today&apos;s Meals
+            </p>
           </div>
-          <Link href="/app/meals" className="text-xs text-primary hover:underline flex items-center gap-1">
+          <Link
+            href="/app/meals"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
             View all <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
         {todayMeals.length > 0 ? (
           <div className="space-y-2">
             {todayMeals.map((meal) => (
-              <div key={meal.id} className="flex items-start gap-3 bg-surface-container rounded-[8px] p-3">
+              <div
+                key={meal.id}
+                className="flex items-start gap-3 bg-surface-container rounded-[8px] p-3"
+              >
                 <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium w-16 shrink-0 pt-0.5">
                   {meal.meal_type}
                 </span>
@@ -173,8 +248,13 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="text-center py-6">
-            <p className="text-sm text-on-surface-variant mb-3">No meals planned for today</p>
-            <button onClick={() => openNewEntry("meal", todayStr)} className="text-sm text-primary font-medium hover:underline">
+            <p className="text-sm text-on-surface-variant mb-3">
+              No meals planned for today
+            </p>
+            <button
+              onClick={() => openNewEntry("meal", todayStr)}
+              className="text-sm text-primary font-medium hover:underline"
+            >
               + Add a meal plan
             </button>
           </div>
@@ -182,7 +262,10 @@ export default function HomePage() {
       </motion.div>
 
       {/* Recent Activity */}
-      <motion.div variants={fadeUp} className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4">
+      <motion.div
+        variants={fadeUp}
+        className="bg-surface-container-lowest rounded-[12px] p-5 space-y-4"
+      >
         <div className="flex items-center justify-between">
           <p className="font-heading font-semibold text-on-surface">
             Recent Activity

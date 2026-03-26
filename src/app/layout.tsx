@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   title: "Flatmate — Shared Living, Tracked Simply",
   description:
     "A calendar-first web app for flatmates to track shared household spending, meals, and tasks.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Your App Name",
+  },
 };
 
 export default function RootLayout({
