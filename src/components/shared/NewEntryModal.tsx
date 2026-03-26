@@ -20,13 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useModalStore } from "@/stores/use-modal-store";
 import { useExpenseStore } from "@/stores/use-expense-store";
 import { useMealStore } from "@/stores/use-meal-store";
@@ -318,45 +311,47 @@ export function NewEntryModal() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
-                    Category
-                  </Label>
-                  <Select value={category} onValueChange={(v) => v && setCategory(v)}>
-                    <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
+                  Category
+                </Label>
+                <div className="flex gap-2 flex-wrap">
+                  {categories.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => setCategory(c.value)}
+                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                        category === c.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
-                    Paid By
-                  </Label>
-                  <Select value={paidBy} onValueChange={(v) => v && setPaidBy(v)}>
-                    <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                      <SelectValue placeholder="Select">
-                        {paidBy ? members.find((m) => m.id === paidBy)?.display_name : null}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {members.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.display_name}
-                        </SelectItem>
-                      ))}
-                      {members.length === 0 && (
-                        <SelectItem value="self" disabled>No members yet</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
+                  Paid By
+                </Label>
+                <div className="flex gap-2 flex-wrap">
+                  {members.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaidBy(m.id)}
+                      className={`h-9 px-3 rounded-[10px] text-xs font-medium transition-colors ${
+                        paidBy === m.id
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                      }`}
+                    >
+                      {m.display_name}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -408,18 +403,22 @@ export function NewEntryModal() {
                 <Label className="text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">
                   Meal Type
                 </Label>
-                <Select value={mealType} onValueChange={(v) => v && setMealType(v)}>
-                  <SelectTrigger className="rounded-[12px] bg-surface-container-high h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mealTypes.map((m) => (
-                      <SelectItem key={m.value} value={m.value}>
-                        {m.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  {mealTypes.map((m) => (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => setMealType(m.value)}
+                      className={`flex-1 h-9 rounded-[10px] text-xs font-medium transition-colors ${
+                        mealType === m.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -653,7 +652,7 @@ export function NewEntryModal() {
   return (
     <Drawer open={isNewEntryOpen} onOpenChange={(open) => !open && closeNewEntry()}>
       <DrawerContent className="bg-surface-container-lowest">
-        <div className="overflow-y-auto max-h-[85vh]">
+        <div className="overflow-y-auto max-h-[85vh]" data-vaul-no-drag>
           <DrawerHeader>
             <DrawerTitle className="font-heading text-xl font-bold text-on-surface">
               {isEditing ? "Edit Entry" : "New Entry"}

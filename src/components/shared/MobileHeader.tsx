@@ -10,7 +10,7 @@ export function MobileHeader() {
   const flat = useFlatStore((s) => s.flat);
 
   return (
-    <header className="lg:hidden flex items-center justify-between h-12 px-4 bg-surface/80 backdrop-blur-[20px] shrink-0">
+    <header className="lg:hidden flex items-center justify-between h-12 px-4 bg-surface/80 backdrop-blur-[20px] shrink-0 relative z-50">
       <Link href="/app/home" className="flex items-center gap-2">
         <Image src="/logo.ico" alt="Logo" width={24} height={24} className="rounded-[6px]" />
         <h1 className="font-heading text-base font-bold text-on-surface">

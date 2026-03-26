@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-export const taskStatuses = ["pending", "in_progress", "completed"] as const;
+export const taskStatuses = ["pending", "completed"] as const;
 export const taskPriorities = ["low", "normal", "high", "urgent"] as const;
 
 export const taskSchema = z.object({

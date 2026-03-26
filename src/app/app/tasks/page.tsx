@@ -33,7 +33,6 @@ const fadeUp = {
 
 const statusIcon: Record<string, React.ReactNode> = {
   pending: <Circle className="h-4 w-4 text-on-surface-variant" />,
-  in_progress: <Clock className="h-4 w-4 text-secondary" />,
   completed: <CheckCircle2 className="h-4 w-4 text-primary" />,
 };
 
@@ -64,7 +63,6 @@ export default function TasksPage() {
   const openEditEntry = useModalStore((s) => s.openEditEntry);
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
-  const inProgressTasks = tasks.filter((t) => t.status === "in_progress");
   const completedTasks = tasks.filter((t) => t.status === "completed");
 
   const toggleTaskComplete = (taskId: string) => {
@@ -157,15 +155,6 @@ export default function TasksPage() {
               </Badge>
             </TabsTrigger>
             <TabsTrigger
-              value="in-progress"
-              className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface"
-            >
-              In Progress
-              <Badge variant="secondary" className="ml-1.5 bg-secondary-container text-on-secondary-container text-[10px] h-5">
-                {inProgressTasks.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger
               value="completed"
               className="rounded-[8px] text-sm data-[state=active]:bg-surface-container-lowest data-[state=active]:text-on-surface"
             >
@@ -191,25 +180,6 @@ export default function TasksPage() {
                 ))
               ) : (
                 <EmptyState message="All caught up! No pending tasks." />
-              )}
-            </AnimatePresence>
-          </TabsContent>
-
-          {/* In Progress */}
-          <TabsContent value="in-progress" className="space-y-2">
-            <AnimatePresence>
-              {inProgressTasks.length > 0 ? (
-                inProgressTasks.map((task, i) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    index={i}
-                    onToggle={toggleTaskComplete}
-                    onEdit={() => openEditEntry({ type: "task", data: task })}
-                  />
-                ))
-              ) : (
-                <EmptyState message="Nothing in progress right now." />
               )}
             </AnimatePresence>
           </TabsContent>

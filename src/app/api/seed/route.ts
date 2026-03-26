@@ -133,10 +133,9 @@ export async function POST() {
     { title: "Restock water cans", assigned_to: pick(2), status: "pending" as const, priority: "high" as const, category: "household", due_date: d(1) },
     { title: "Schedule plumber visit", assigned_to: pick(0), status: "pending" as const, priority: "normal" as const, category: "maintenance", due_date: d(3) },
     { title: "Buy new curtains", assigned_to: pick(1), status: "pending" as const, priority: "low" as const, category: "household", due_date: d(5) },
-    // In-progress
-    { title: "Clean kitchen", assigned_to: pick(1), status: "in_progress" as const, priority: "high" as const, category: "cleaning", due_date: d(0) },
-    { title: "Organise shoe rack", assigned_to: pick(0), status: "in_progress" as const, priority: "normal" as const, category: "household", due_date: d(1) },
-    { title: "Laundry — bedsheets", assigned_to: pick(2), status: "in_progress" as const, priority: "normal" as const, category: "cleaning", due_date: d(0) },
+    { title: "Clean kitchen", assigned_to: pick(1), status: "pending" as const, priority: "high" as const, category: "cleaning", due_date: d(0) },
+    { title: "Organise shoe rack", assigned_to: pick(0), status: "pending" as const, priority: "normal" as const, category: "household", due_date: d(1) },
+    { title: "Laundry — bedsheets", assigned_to: pick(2), status: "pending" as const, priority: "normal" as const, category: "cleaning", due_date: d(0) },
     // Completed
     { title: "Fix bathroom tap", assigned_to: pick(0), status: "completed" as const, priority: "normal" as const, category: "maintenance", completed_at: subDays(today, 2) },
     { title: "Sweep living room", assigned_to: pick(1), status: "completed" as const, priority: "low" as const, category: "cleaning", completed_at: subDays(today, 1) },

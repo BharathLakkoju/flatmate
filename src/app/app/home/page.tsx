@@ -37,13 +37,17 @@ export default function HomePage() {
   const todayStr = format(today, "yyyy-MM-dd");
   const hour = today.getHours();
   const greeting =
-    hour < 12
-      ? "Good Morning"
-      : hour < 17
-        ? "Good Afternoon"
-        : hour < 21
-          ? "Good Evening"
-          : "Still planning at this hour?";
+    hour < 5
+      ? "Isn't it too early to plan?"
+      : hour < 12
+        ? "Rise and Shine!"
+        : hour < 16
+          ? "Don't sleep just cuz u ate yummy food!"
+          : hour < 19
+            ? "It's time for an Evening Snack!"
+            : hour < 21
+              ? "Food after a long day, is a good day!"
+              : "Still planning at this hour?";
 
   const expenses = useExpenseStore((s) => s.expenses);
   const meals = useMealStore((s) => s.meals);
@@ -84,7 +88,7 @@ export default function HomePage() {
       {/* Greeting */}
       <motion.div variants={fadeUp}>
         <p className="font-heading text-2xl sm:text-3xl font-bold text-on-surface">
-          {greeting} {hour < 21 ? "👋" : "🌙"}
+          {greeting} {hour >= 21 || hour < 5 ? "🌙" : "👋"}
         </p>
         {userName && (
           <p className="font-heading text-lg sm:text-xl font-semibold text-on-surface-variant mt-0.5">

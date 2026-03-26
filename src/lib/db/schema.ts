@@ -31,7 +31,6 @@ export const mealTypeEnum = pgEnum("meal_type", [
 
 export const taskStatusEnum = pgEnum("task_status", [
   "pending",
-  "in_progress",
   "completed",
 ]);
 

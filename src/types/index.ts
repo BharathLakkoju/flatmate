@@ -8,7 +8,7 @@ export type ExpenseCategory =
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "general";
 
-export type TaskStatus = "pending" | "in_progress" | "completed";
+export type TaskStatus = "pending" | "completed";
 
 export type TaskPriority = "low" | "normal" | "high" | "urgent";
 
