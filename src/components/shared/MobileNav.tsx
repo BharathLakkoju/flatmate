@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Settings,
   Plus,
+  ShoppingCart,
 } from "lucide-react";
 import { useModalStore } from "@/stores/use-modal-store";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/app/calendar", label: "Calendar", icon: Calendar },
   { href: "/app/meals", label: "Meals", icon: UtensilsCrossed },
   { href: "/app/tasks", label: "Tasks", icon: ClipboardList },
+  { href: "/app/groceries", label: "Groceries", icon: ShoppingCart },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
@@ -49,19 +51,19 @@ export function MobileNav() {
                 <div
                   className={cn(
                     "flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors",
-                    isActive && "bg-primary/10 px-5 py-2"
+                    isActive && "bg-primary/10 px-5 py-2",
                   )}
                 >
                   <item.icon
                     className={cn(
                       "h-5 w-5 transition-colors",
-                      isActive ? "text-primary" : "text-on-surface-variant"
+                      isActive ? "text-primary" : "text-on-surface-variant",
                     )}
                   />
                   <span
                     className={cn(
                       "text-[10px] font-medium transition-colors",
-                      isActive ? "text-primary" : "text-on-surface-variant"
+                      isActive ? "text-primary" : "text-on-surface-variant",
                     )}
                   >
                     {item.label}

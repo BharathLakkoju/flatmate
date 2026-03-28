@@ -207,7 +207,7 @@ export default function HomePage() {
           <p className="text-base font-heading font-bold text-on-surface mt-0.5">
             {dueTasks.some((t) => t.assigned_to === currentMember?.id) ? (
               <>
-                <span className="text-error">@</span>{" "}
+                <span className="text-red-500">@</span>{" "}
                 {
                   dueTasks.filter((t) => t.assigned_to === currentMember?.id)
                     .length

@@ -64,13 +64,16 @@ export default function ExpensesPage() {
     });
   }, [expenses, year, month]);
 
-  const monthTotal = monthExpenses.reduce((sum, e) => sum + e.amount_inr, 0);
+  const monthTotal = monthExpenses.reduce(
+    (sum, e) => sum + Number(e.amount_inr),
+    0,
+  );
 
   // Per-category breakdown
   const categoryBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
     monthExpenses.forEach((e) => {
-      map[e.category] = (map[e.category] || 0) + e.amount_inr;
+      map[e.category] = (map[e.category] || 0) + Number(e.amount_inr);
     });
     return Object.entries(map)
       .sort(([, a], [, b]) => b - a)
@@ -86,7 +89,7 @@ export default function ExpensesPage() {
   const personBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
     monthExpenses.forEach((e) => {
-      map[e.paid_by] = (map[e.paid_by] || 0) + e.amount_inr;
+      map[e.paid_by] = (map[e.paid_by] || 0) + Number(e.amount_inr);
     });
     return Object.entries(map)
       .sort(([, a], [, b]) => b - a)
@@ -351,7 +354,7 @@ export default function ExpensesPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-on-surface">
-                      ₹{expense.amount_inr.toLocaleString("en-IN")}
+                      ₹{Number(expense.amount_inr).toLocaleString("en-IN")}
                     </p>
                     <p className="text-[10px] text-on-surface-variant">
                       {format(new Date(expense.date), "dd MMM")}

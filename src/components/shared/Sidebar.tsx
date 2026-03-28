@@ -13,6 +13,7 @@ import {
   Settings,
   Plus,
   User,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useModalStore } from "@/stores/use-modal-store";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/app/expenses", label: "Expenses", icon: Receipt },
   { href: "/app/meals", label: "Meals", icon: UtensilsCrossed },
   { href: "/app/tasks", label: "Tasks", icon: ClipboardList },
+  { href: "/app/groceries", label: "Groceries", icon: ShoppingCart },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
@@ -39,7 +41,13 @@ export function Sidebar() {
       {/* Flat Name */}
       <div className="px-3 mb-2">
         <Link href="/app/home" className="flex items-center gap-2.5">
-          <Image src="/logo.ico" alt="Logo" width={28} height={28} className="rounded-[8px]" />
+          <Image
+            src="/logo.ico"
+            alt="Logo"
+            width={28}
+            height={28}
+            className="rounded-[8px]"
+          />
           <h1 className="font-heading text-lg font-bold text-on-surface">
             {flat?.name || "My Flat"}
           </h1>
@@ -47,7 +55,9 @@ export function Sidebar() {
       </div>
       <div className="px-3 mb-6">
         <p className="text-xs text-on-surface-variant/90">
-          {members.length > 0 ? `${members.length} Member${members.length !== 1 ? "s" : ""} Active` : "No members yet"}
+          {members.length > 0
+            ? `${members.length} Member${members.length !== 1 ? "s" : ""} Active`
+            : "No members yet"}
         </p>
       </div>
 
@@ -64,7 +74,7 @@ export function Sidebar() {
                   "flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-medium transition-colors",
                   isActive
                     ? "bg-surface-container-lowest text-on-surface shadow-[0_12px_32px_rgba(48,51,46,0.06)]"
-                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container",
                 )}
               >
                 <item.icon className="h-4.5 w-4.5" />

@@ -6,6 +6,7 @@ import { useFlatStore } from "@/stores/use-flat-store";
 import { useExpenseStore } from "@/stores/use-expense-store";
 import { useMealStore } from "@/stores/use-meal-store";
 import { useTaskStore } from "@/stores/use-task-store";
+import { useGroceryStore } from "@/stores/use-grocery-store";
 import { useAppStore } from "@/stores/use-app-store";
 import { supabase } from "@/lib/supabase/client";
 import type { Member } from "@/types";
@@ -18,6 +19,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const setExpenses = useExpenseStore((s) => s.setExpenses);
   const setMeals = useMealStore((s) => s.setMeals);
   const setTasks = useTaskStore((s) => s.setTasks);
+  const setGroceryItems = useGroceryStore((s) => s.setItems);
+  const setGroceryOrders = useGroceryStore((s) => s.setOrders);
   const setAppReady = useAppStore((s) => s.setAppReady);
   const loaded = useRef(false);
 
@@ -120,6 +123,20 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .then((r) => (r.ok ? r.json() : []))
       .then(setTasks);
 
+    // Fetch grocery items
+    const groceryItemsPromise = fetch(
+      `/api/groceries?flat_id=${encodeURIComponent(flatId)}`,
+    )
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setGroceryItems);
+
+    // Fetch grocery orders
+    const groceryOrdersPromise = fetch(
+      `/api/groceries/orders?flat_id=${encodeURIComponent(flatId)}`,
+    )
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setGroceryOrders);
+
     // Mark app as ready once all data is loaded
     Promise.all([
       flatPromise,
@@ -127,6 +144,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       expensesPromise,
       mealsPromise,
       tasksPromise,
+      groceryItemsPromise,
+      groceryOrdersPromise,
     ]).finally(() => setAppReady(true));
   }, [
     setFlat,
@@ -135,6 +154,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setExpenses,
     setMeals,
     setTasks,
+    setGroceryItems,
+    setGroceryOrders,
     setAppReady,
   ]);
 

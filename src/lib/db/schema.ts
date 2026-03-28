@@ -47,6 +47,29 @@ export const resourceStatusEnum = pgEnum("resource_status", [
   "out_of_stock",
 ]);
 
+export const groceryUnitTypeEnum = pgEnum("grocery_unit_type", [
+  "pieces",
+  "percentage",
+]);
+
+export const groceryItemStatusEnum = pgEnum("grocery_item_status", [
+  "in_stock",
+  "low",
+  "out_of_stock",
+]);
+
+export const groceryPlatformEnum = pgEnum("grocery_platform", [
+  "swiggy",
+  "zepto",
+  "blinkit",
+  "dunzo",
+  "bigbasket",
+  "jiomart",
+  "dmart",
+  "other",
+  "manual",
+]);
+
 // Tables
 export const flats = pgTable("flats", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -140,3 +163,58 @@ export const notifications = pgTable("notifications", {
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Grocery tables
+export const groceryOrders = pgTable("grocery_orders", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  flat_id: uuid("flat_id")
+    .references(() => flats.id, { onDelete: "cascade" })
+    .notNull(),
+  platform: groceryPlatformEnum("platform").default("other").notNull(),
+  platform_label: varchar("platform_label", { length: 100 }),
+  total_amount_inr: numeric("total_amount_inr", { precision: 10, scale: 2 }).notNull(),
+  order_date: date("order_date").notNull(),
+  expense_entry_id: uuid("expense_entry_id").references(() => expenseEntries.id, { onDelete: "set null" }),
+  created_by: uuid("created_by")
+    .references(() => members.id)
+    .notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groceryItems = pgTable("grocery_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  flat_id: uuid("flat_id")
+    .references(() => flats.id, { onDelete: "cascade" })
+    .notNull(),
+  order_id: uuid("order_id").references(() => groceryOrders.id, { onDelete: "set null" }),
+  name: varchar("name", { length: 200 }).notNull(),
+  unit_type: groceryUnitTypeEnum("unit_type").default("pieces").notNull(),
+  unit_label: varchar("unit_label", { length: 50 }).default("pieces").notNull(),
+  total_quantity: numeric("total_quantity", { precision: 10, scale: 2 }).notNull(),
+  remaining_quantity: numeric("remaining_quantity", { precision: 10, scale: 2 }).notNull(),
+  price_inr: numeric("price_inr", { precision: 10, scale: 2 }),
+  purchase_date: date("purchase_date").notNull(),
+  estimated_days: integer("estimated_days"),
+  status: groceryItemStatusEnum("status").default("in_stock").notNull(),
+  created_by: uuid("created_by")
+    .references(() => members.id)
+    .notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const groceryUsageLogs = pgTable("grocery_usage_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  item_id: uuid("item_id")
+    .references(() => groceryItems.id, { onDelete: "cascade" })
+    .notNull(),
+  flat_id: uuid("flat_id")
+    .references(() => flats.id, { onDelete: "cascade" })
+    .notNull(),
+  logged_by: uuid("logged_by")
+    .references(() => members.id)
+    .notNull(),
+  log_date: date("log_date").notNull(),
+  amount_used: numeric("amount_used", { precision: 10, scale: 2 }).notNull(),
+  note: text("note"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});

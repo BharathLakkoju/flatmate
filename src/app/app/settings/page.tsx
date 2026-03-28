@@ -8,11 +8,8 @@ import {
   Copy,
   Check,
   RefreshCw,
-  Moon,
-  Sun,
   Bell,
   Shield,
-  LogOut,
   UserMinus,
 } from "lucide-react";
 import {
@@ -49,7 +46,6 @@ export default function SettingsPage() {
   const currentMember = useFlatStore((s) => s.currentMember);
   const removeMember = useFlatStore((s) => s.removeMember);
   const [copied, setCopied] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [budgetValue, setBudgetValue] = useState(
     String(flat?.monthly_budget ?? 15000),
@@ -106,11 +102,6 @@ export default function SettingsPage() {
     await navigator.clipboard.writeText(inviteCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const toggleDarkMode = (checked: boolean) => {
-    setDarkMode(checked);
-    document.documentElement.classList.toggle("dark", checked);
   };
 
   const displayMembers = members;
@@ -261,26 +252,6 @@ export default function SettingsPage() {
         </p>
 
         <div className="space-y-4">
-          {/* Dark Mode */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {darkMode ? (
-                <Moon className="h-4 w-4 text-on-surface-variant" />
-              ) : (
-                <Sun className="h-4 w-4 text-on-surface-variant" />
-              )}
-              <div>
-                <p className="text-sm text-on-surface">Dark Mode</p>
-                <p className="text-xs text-on-surface-variant">
-                  Switch between light and dark themes
-                </p>
-              </div>
-            </div>
-            <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
-          </div>
-
-          <Separator className="bg-surface-container" />
-
           {/* Notifications */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

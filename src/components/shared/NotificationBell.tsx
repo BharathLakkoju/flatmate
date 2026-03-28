@@ -89,7 +89,7 @@ function SwipeableNotification({
         onDragEnd={handleDragEnd}
         style={{ x }}
         className={`flex items-start gap-3 px-4 py-3 transition-colors relative bg-surface-container-lowest ${
-          isRead ? "opacity-60" : ""
+          isRead ? "opacity-75" : ""
         }`}
       >
         <div className="mt-0.5 h-8 w-8 rounded-[8px] bg-surface-container flex items-center justify-center shrink-0">
@@ -98,15 +98,15 @@ function SwipeableNotification({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-on-surface leading-snug">
+          <p className="text-sm font-semibold text-neutral-900 leading-snug">
             {notification.title}
           </p>
           {notification.body && (
-            <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-2">
+            <p className="text-xs text-neutral-700 mt-0.5 line-clamp-2">
               {notification.body}
             </p>
           )}
-          <p className="text-[10px] text-on-surface-variant/60 mt-1">
+          <p className="text-[10px] text-neutral-500 mt-1">
             {timeAgo(notification.created_at)}
           </p>
         </div>
