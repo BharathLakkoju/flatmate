@@ -51,7 +51,7 @@ export function MobileNav() {
                 <div
                   className={cn(
                     "flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors",
-                    isActive && "bg-primary/10 px-5 py-2",
+                    isActive && "bg-primary/10 px-3 py-2",
                   )}
                 >
                   <item.icon
