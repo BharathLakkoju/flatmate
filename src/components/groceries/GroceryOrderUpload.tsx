@@ -104,61 +104,72 @@ export function GroceryOrderUpload({ onParsed }: GroceryOrderUploadProps) {
   const [statusMsg, setStatusMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  const MAX_IMAGES = 5;
+
+  const toBase64 = (f: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(f);
+    });
+
+  const processOneFile = async (
+    file: File,
+    idx: number,
+    total: number,
+  ): Promise<OCRParsedItem[]> => {
+    setStatusMsg(`Analysing image ${idx + 1}/${total}…`);
+    const base64 = await toBase64(file);
+    const res = await fetch("/api/groceries/ocr", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image_data: base64,
+        mime_type: file.type || "image/jpeg",
+      }),
+    });
+
+    if (res.ok) {
+      const { items } = await res.json();
+      return items as OCRParsedItem[];
+    }
+
+    const errData = await res.json().catch(() => ({}));
+    console.warn(
+      "AI OCR failed, falling back to Tesseract:",
+      res.status,
+      errData,
+    );
+
+    setStatusMsg(`Reading image ${idx + 1}/${total}…`);
+    const Tesseract = await import("tesseract.js");
+    const { data } = await Tesseract.recognize(file, "eng", {
+      logger: () => {},
+    });
+    return parseOCRText(data.text);
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+
+    const files = Array.from(fileList).slice(0, MAX_IMAGES);
 
     setStatus("loading");
     setErrorMsg("");
 
-    // Convert file to base64
-    const toBase64 = (f: File): Promise<string> =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          // Strip "data:image/...;base64," prefix
-          resolve(result.split(",")[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(f);
-      });
-
     try {
-      setStatusMsg("Analysing image…");
-      const base64 = await toBase64(file);
-      const res = await fetch("/api/groceries/ocr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          image_data: base64,
-          mime_type: file.type || "image/jpeg",
-        }),
-      });
-
-      if (res.ok) {
-        const { items } = await res.json();
-        setStatus("done");
-        onParsed(items, "");
-        return;
+      const allItems: OCRParsedItem[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const items = await processOneFile(files[i], i, files.length);
+        allItems.push(...items);
       }
-
-      const errData = await res.json().catch(() => ({}));
-      console.warn(
-        "AI OCR failed, falling back to Tesseract:",
-        res.status,
-        errData,
-      );
-      // Fall through to Tesseract on any AI failure (key missing, parse error, model error)
-
-      setStatusMsg("Reading image…");
-      const Tesseract = await import("tesseract.js");
-      const { data } = await Tesseract.recognize(file, "eng", {
-        logger: () => {},
-      });
-      const parsed = parseOCRText(data.text);
       setStatus("done");
-      onParsed(parsed, data.text);
+      onParsed(allItems, "");
     } catch (err) {
       console.error("OCR error:", err);
       setStatus("error");
@@ -174,6 +185,7 @@ export function GroceryOrderUpload({ onParsed }: GroceryOrderUploadProps) {
         ref={inputRef}
         type="file"
         accept="image/*"
+        multiple
         className="sr-only"
         onChange={handleFileChange}
       />
